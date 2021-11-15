@@ -150,7 +150,7 @@ async function updateToken(){
         const oldRefToken = result.rows[0].zoom_refresh_token;
 
         const request = async () => {
-            const respon = await axios.post("https://zoom.us/oauth/token?grant_type=refresh_token&refresh_token=" + oldRefToken, [], { headers: headerBasic });
+            const respon = await axios.post("https://zoom.us/oauth/token?grant_type=refresh_token&refresh_token=" + oldRefToken, {}, { headers: headerBasic });
             return respon.data;
         }
         const data = await request();
@@ -162,7 +162,7 @@ async function updateToken(){
         const request1 = async() => {
             return await pool.query(`UPDATE data SET zoom_token = ${acc_token}, zoom_refresh_token = ${ref_token}, zoom_time_token = ${now_token} WHERE id = 1`);
         }
-        const hasil = await request1();
+        await request1();
     }
     await pool.end();
 }
