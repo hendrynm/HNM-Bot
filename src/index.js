@@ -150,7 +150,7 @@ async function updateToken(){
         const oldRefToken = result.rows[0].zoom_refresh_token;
 
         const request = async () => {
-            const respon = await axios.post("https://zoom.us/oauth/token?grant_type=refresh_token&refresh_token=" + oldRefToken, {}, { headers: headerBasic });
+            const respon = await axios.post("https://zoom.us/oauth/token?grant_type=refresh_token&refresh_token=" + oldRefToken, null, { headers: headerBasic });
             return respon.data;
         }
         const data = await request();
