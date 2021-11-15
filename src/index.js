@@ -144,7 +144,7 @@ async function updateToken(){
         const secret = process.env.ZOOM_CLIENT_SECRET;
         const keyLocked = Buffer.from(client + ":" + secret).toString('base64');
         let headerBasic = {
-            'Content-Type': 'application/json; charset=UTF-8',
+            'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': 'Basic ' + keyLocked
         }
         const oldRefToken = result.rows[0].zoom_refresh_token;
