@@ -72,11 +72,8 @@ function HandleMessage(context){
         else if(userMsg === '/leave'){
             return leaveLine(context);
         }
-        else if(userMsg === '/coba'){
-            return updateToken();
-        }
         else if(userMsg.substring(0,1) === "/"){
-            return context.sendText("Mohon maaf, kami sedang dalam Maintenance");
+            return context.sendText("Kode tersebut belum tersedia.");
         }
     }
 }
