@@ -4,9 +4,16 @@ const { router, line } = require('bottender/router');
 // AXIOS API
 const axios = require('axios');
 
-// ENV EDITOR
-const fs = require('fs');
-const env = fs.readFileSync('.env', 'utf8').split('\n');
+// POSTGRESQL
+const { Pool } = require('pg');
+const credentials = {
+    host: process.env.POSTGRESQL_HOST,
+    database: process.env.POSTGRESQL_DATABASE,
+    user: process.env.POSTGRESQL_USERNAME,
+    password: process.env.POSTGRESQL_PASSWORD,
+    port: process.env.POSTGRESQL_PORT,
+    ssl: { rejectUnauthorized: false }
+};
 
 // LINE API HEADER
 const headerLine = {
@@ -15,10 +22,18 @@ const headerLine = {
 }
 
 // ZOOM API HEADER
-const readToken = env[23].split('=')
-const headerZoom = {
-    "Content-Type": "application/json; charset=UTF-8",
-    "Authorization": "Bearer " + readToken[1]
+async function getHeaderZoom() {
+    const pool = new Pool(credentials);
+    const requestToken = async () => {
+        return await pool.query("SELECT zoom_token FROM data WHERE id = 1");
+    }
+    const ambilToken = await requestToken();
+    const token = ambilToken.rows[0].zoom_token;
+
+    return {
+        "Content-Type": "application/json; charset=UTF-8",
+        "Authorization": "Bearer " + token
+    }
 }
 
 /* ================================================ */
@@ -56,6 +71,9 @@ function HandleMessage(context){
         }
         else if(userMsg === '/leave'){
             return leaveLine(context);
+        }
+        else if(userMsg === '/coba'){
+            return updateToken();
         }
         else if(userMsg.substring(0,1) === "/"){
             return context.sendText("Mohon maaf, kami sedang dalam Maintenance");
@@ -114,20 +132,25 @@ function leaveLine(context) {
 }
 
 async function updateToken(){
+    const pool = new Pool(credentials);
+    const requestData = async() => {
+        return await pool.query("SELECT * FROM data WHERE id = 1");
+    }
+    const result = await requestData();
     const now = new Date().getTime();
-    const time = env[25].split('=');
-    let last = Number(time[1]) + 3600000;
+
+    const time = result.rows[0].zoom_time_token;
+    let last = Number(time) + 3600000;
 
     if(last <= now){
-        const client = env[20].split('=');
-        const secret = env[21].split('=');
-        const keyLocked = Buffer.from(client[1] + ":" + secret[1]).toString('base64');
+        const client = process.env.ZOOM_CLIENT_ID;
+        const secret = process.env.ZOOM_CLIENT_SECRET;
+        const keyLocked = Buffer.from(client + ":" + secret).toString('base64');
         let headerBasic = {
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': 'Basic ' + keyLocked
         }
-        const readOldRefToken = env[24].split('=');
-        let oldRefToken = readOldRefToken[1];
+        const oldRefToken = result.rows[0].zoom_refresh_token;
 
         const request = async () => {
             const respon = await axios.post("https://zoom.us/oauth/token?grant_type=refresh_token&refresh_token=" + oldRefToken, [], { headers: headerBasic });
@@ -135,14 +158,16 @@ async function updateToken(){
         }
         const data = await request();
 
-        const acc_token = data.access_token;
-        const ref_token = data.refresh_token;
-        const now_token = new Date().getTime();
+        const acc_token = String(data.access_token);
+        const ref_token = String(data.refresh_token);
+        const now_token = String(new Date().getTime());
 
-        setEnvValue("ZOOM_TOKEN",acc_token);
-        setEnvValue("ZOOM_REFRESH_TOKEN",ref_token);
-        setEnvValue("ZOOM_TOKEN_TIME",now_token);
+        const request1 = async() => {
+            return await pool.query(`UPDATE data SET zoom_token = ${acc_token}, zoom_refresh_token = ${ref_token}, zoom_time_token = ${now_token} WHERE id = 1`);
+        }
+        const hasil = await request1();
     }
+    await pool.end();
 }
 
 async function scheduleZoom(context){
@@ -189,7 +214,7 @@ async function scheduleZoom(context){
         }
 
         const request = async () => {
-            const respon = await axios.post("https://api.zoom.us/v2/users/me/meetings", payload, { headers: headerZoom });
+            const respon = await axios.post("https://api.zoom.us/v2/users/me/meetings", payload, { headers: await getHeaderZoom() });
             return respon.data;
         }
         const data = await request();
@@ -220,7 +245,7 @@ async function scheduleZoom(context){
 async function getMyMeetings(context) {
     await updateToken();
     const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=upcoming", { headers: headerZoom });
+        const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=upcoming", { headers: await getHeaderZoom() });
         return respon.data;
     }
     const hasil = await request();
@@ -353,7 +378,7 @@ async function startZoom(context){
     const id = context.event.text.substring(7);
 
     const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: headerZoom });
+        const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
         return [respon.status,respon.data] ;
     }
     const data = await request();
@@ -432,7 +457,7 @@ async function startZoom(context){
 async function zoomOnProgress(context){
     await updateToken();
     const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=live", { headers: headerZoom });
+        const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=live", { headers: await getHeaderZoom() });
         return respon.data ;
     }
     const meetings = await request();
@@ -466,7 +491,7 @@ async function getZoomInvite(context){
     const id = context.event.text.substring(6);
 
     const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: headerZoom });
+        const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
         return respon.data;
     }
     const data = await request();
@@ -498,7 +523,7 @@ async function deleteZoom(context){
     const id = context.event.text.substring(8);
 
     const request = async () => {
-        const respon = await axios.delete("https://api.zoom.us/v2/meetings/" + id, { headers: headerZoom });
+        const respon = await axios.delete("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
         return respon.status;
     }
     const status = await request();
@@ -507,16 +532,4 @@ async function deleteZoom(context){
     (status === 204) ? msg = "Zoom Meeting dengan ID " + id + " berhasil dibatalkan"
         : msg = "Zoom Meeting dengan ID " + id + " tidak ditemukan";
     await context.sendText(msg);
-}
-
-function setEnvValue(kunci, nilai){
-    const dataArray = fs.readFileSync('.env','utf8').split('\n');
-    const replacedArray = dataArray.map((line) => {
-        if(line.split('=')[0] === kunci) return kunci + "=" + String(nilai);
-        else return line;
-    });
-    fs.writeFileSync('.env', "");
-    for(let i = 0; i < replacedArray.length; i++){
-        fs.appendFileSync('.env', replacedArray[i] + ((i === replacedArray.length-1) ? "" : "\n"));
-    }
 }
