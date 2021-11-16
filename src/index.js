@@ -28,7 +28,7 @@ async function getHeaderZoom() {
         return await pool.query("SELECT zoom_token FROM data WHERE id = 1");
     }
     const ambilToken = await requestToken();
-    const token = ambilToken.rows[0].zoom_token;
+    const token = Buffer.from((ambilToken.rows[0].zoom_token),'base64url').toString('utf-8');
 
     return {
         "Content-Type": "application/json; charset=UTF-8",
@@ -143,20 +143,23 @@ async function updateToken(){
         const client = process.env.ZOOM_CLIENT_ID;
         const secret = process.env.ZOOM_CLIENT_SECRET;
         const keyLocked = Buffer.from(client + ":" + secret).toString('base64');
-        let headerBasic = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + keyLocked
-        }
-        const oldRefToken = result.rows[0].zoom_refresh_token;
+        const oldRefToken = Buffer.from((result.rows[0].zoom_refresh_token),'base64url').toString('utf-8')
 
         const request = async () => {
-            const respon = await axios.post("https://zoom.us/oauth/token?grant_type=refresh_token&refresh_token=" + oldRefToken, null, { headers: headerBasic });
+            const respon = await axios({
+                method: 'post',
+                url: 'https://zoom.us/oauth/token?grant_type=refresh_token&refresh_token=' + oldRefToken,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': 'Basic ' + keyLocked
+                }
+            });
             return respon.data;
         }
         const data = await request();
 
-        const acc_token = String(data.access_token);
-        const ref_token = String(data.refresh_token);
+        const acc_token = "('" + Buffer.from(data.access_token).toString('base64url') + "')";
+        const ref_token = "('" + Buffer.from(data.refresh_token).toString('base64url') + "')";
         const now_token = String(new Date().getTime());
 
         const request1 = async() => {
