@@ -223,10 +223,10 @@ async function scheduleZoom(context){
         let id = data.id;
         let meetID = id.toString();
         let desc = data.agenda;
-        let newDate = new Date(String(data.start_time).replace('Z','+07:00')).toLocaleString('id-ID',{dateStyle: 'full'});
-        let newStart = new Date(String(data.start_time).replace('Z','+07:00')).toLocaleString('id-ID',{timeStyle: 'short'});
+        let newDate = new Date(data.start_time).toLocaleString('id-ID',{dateStyle: 'full'});
+        let newStart = new Date(data.start_time).toLocaleString('id-ID',{timeStyle: 'short'});
         let newDuration = data.duration;
-        let newEnd = new Date((new Date(String(data.start_time).replace('Z','+07:00')).getTime()) + (newDuration * 60000)).toLocaleString('id-ID',{timeStyle: 'short'});
+        let newEnd = new Date((new Date(data.start_time).getTime()) + (newDuration * 60000)).toLocaleString('id-ID',{timeStyle: 'short'});
         let newURL = data.join_url;
 
         msg =
@@ -256,12 +256,12 @@ async function getMyMeetings(context) {
     for(let i = 0; i < data.length; ++i) {
         let id = data[i].id;
         let topic = data[i].topic;
-        let date = new Date(String(data[i].start_time).replace('Z','+07:00')).toLocaleString('id-ID', {dateStyle: 'full'});
+        let date = new Date(data[i].start_time).toLocaleString('id-ID', {dateStyle: 'full'});
         let duration = data[i].duration;
         let pembuat = data[i].agenda;
         let type = data[i].type;
-        let timeStart = new Date(String(data[i].start_time).replace('Z','+07:00')).toLocaleString('id-ID', {timeStyle: 'short'});
-        let timeEnd = new Date((new Date(String(data[i].start_time).replace('Z','+07:00')).getTime()) + (duration * 60000)).toLocaleString('id-ID', {timeStyle: 'short'});
+        let timeStart = new Date(data[i].start_time).toLocaleString('id-ID', {timeStyle: 'short'});
+        let timeEnd = new Date((new Date(data[i].start_time)).getTime() + (duration * 60000)).toLocaleString('id-ID', {timeStyle: 'short'});
 
         if (id === '' || id === null) {
             break;
@@ -471,8 +471,8 @@ async function zoomOnProgress(context){
             let topic = meetings[i].topic;
             let type = meetings[i].type;
             let pembuat = meetings[i].agenda;
-            let startTime = new Date(String(meetings[i].start_time).replace('Z','+07:00')).toLocaleString('id-ID',{timeStyle: 'short'});
-            let endTime = new Date((new Date(String(meetings[i].start_time).replace('Z','+07:00')).getTime()) + (meetings[i].duration * 60000)).toLocaleString('id-ID',{timeStyle: 'short'});
+            let startTime = new Date(meetings[i].start_time).toLocaleString('id-ID',{timeStyle: 'short'});
+            let endTime = new Date((new Date(meetings[i].start_time).getTime()) + (meetings[i].duration * 60000)).toLocaleString('id-ID',{timeStyle: 'short'});
 
             if(type === 2){
                 message = message + "\n*Topik: " + topic + "*\nWaktu: " + startTime + " - " + endTime + "\nPembuat: " + pembuat + "\n\n";
@@ -500,10 +500,10 @@ async function getZoomInvite(context){
     let zoomID = id.toString();
     let pass = data.password;
     let desc = data.agenda;
-    let date = new Date(String(data.start_time).replace('Z','+07:00')).toLocaleString('id-ID',{dateStyle: 'full'});
-    let start = new Date(String(data.start_time).replace('Z','+07:00')).toLocaleString('id-ID',{timeStyle: 'short'});
+    let date = new Date(data.start_time).toLocaleString('id-ID',{dateStyle: 'full'});
+    let start = new Date(data.start_time).toLocaleString('id-ID',{timeStyle: 'short'});
     let dur = data.duration;
-    let end = new Date((new Date(String(data.start_time).replace('Z','+07:00')).getTime()) + (dur * 60000)).toLocaleString('id-ID',{timeStyle: 'short'});
+    let end = new Date((new Date(data.start_time).getTime()) + (dur * 60000)).toLocaleString('id-ID',{timeStyle: 'short'});
     let url = data.join_url;
 
     let message =
