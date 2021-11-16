@@ -510,8 +510,8 @@ async function getZoomInvite(context){
         desc + " mengajak Anda untuk bergabung ke Zoom Meeting.\n\n" +
         "*Topik: " + topic + "*\n" +
         "Tanggal: " + date + "\n" +
-        "Waktu: " + start + " - " + end + " (" + dur + " menit)\n" +
-        "Join URL: " + url.replace("telkomsel.","") + "\n\n" +
+        "Waktu: " + start + " - " + end + " (" + dur + " menit)\n\n" +
+        "Join Zoom Meeting\n" + url.replace("telkomsel.","") + "\n\n" +
         "Meeting ID: " + zoomID.substring(0,3) + " " + zoomID.substring(3,7) + " " + zoomID.substring(7) + "\n" +
         "Passcode: " + pass + "\n";
 
