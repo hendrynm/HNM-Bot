@@ -464,7 +464,9 @@ async function zoomOnProgress(context){
         const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=live", { headers: await getHeaderZoom() });
         return respon.data ;
     }
-    const meetings = await request();
+    const hasil = await request();
+    const meetings = hasil.meetings;
+    console.log(meetings);
     let message = "Zoom Meeting yang sedang digunakan sekarang:\n";
 
     if(meetings[0] == null){
@@ -482,7 +484,7 @@ async function zoomOnProgress(context){
                 message = message + "\n*Topik: " + topic + "*\nWaktu: " + startTime + " - " + endTime + "\nPembuat: " + pembuat + "\n\n";
             }
             else{
-                message = message + "\nTopik: " + topic + "\nWaktu: Recurring Meeting\nPembuat: " + pembuat + "\n\n";
+                message = message + "\n*Topik: " + topic + "*\nWaktu: Recurring Meeting\nPembuat: " + pembuat + "\n\n";
             }
         }
     }
