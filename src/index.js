@@ -553,62 +553,61 @@ async function zoomRecord(context){
         let topik = data.topic;
         let start = new Date(data.start_time).toLocaleString('id-ID',{dateStyle: 'full', timeStyle: 'short'});
         let durasi = data.duration + " menit";
-        let totalSize = ((data.total_size)/1024/1024) + " MB";
+        let totalSize = (Math.ceil((data.total_size)/1024/1024)) + " MB";
         let shareUrl = (data.share_url).replace("telkomsel.","");
-        let recData = data.recording_files;
+        let recData = data.recording_files
         let sizeSSSV, urlSSSV, sizeSSGV, urlSSGV, sizeSV, urlSV, sizeGV, urlGV, sizeSS, urlSS, sizeCF, urlCF;
 
         for(let i = 0 ; i < (recData.length) ; i++){
-            let tipe = recData.recording_type[i];
+            let tipe = recData[i].recording_type;
             switch(tipe){
                 case("shared_screen_with_speaker_view"):
-                    sizeSSSV = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    sizeSSSV = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
                     urlSSSV = (recData[i].download_url).replace("telkomsel.","") || undefined;
                     break;
                 case("shared_screen_with_gallery_view"):
-                    sizeSSGV = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    sizeSSGV = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
                     urlSSGV = (recData[i].download_url).replace("telkomsel.","") || undefined;
                     break;
                 case("speaker_view"):
-                    sizeSV = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    sizeSV = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
                     urlSV = (recData[i].download_url).replace("telkomsel.","") || undefined;
                     break;
                 case("gallery_view"):
-                    sizeGV = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    sizeGV = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
                     urlGV = (recData[i].download_url).replace("telkomsel.","") || undefined;
                     break;
                 case("shared_screen"):
-                    sizeSS = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    sizeSS = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
                     urlSS = (recData[i].download_url).replace("telkomsel.","") || undefined;
                     break;
                 case("chat_file"):
-                    sizeCF = ((recData[i].file_size)/1024) + " KB" || undefined;
+                    sizeCF = (Math.ceil((recData[i].file_size)/1024)) + " KB" || undefined;
                     urlCF = (recData[i].download_url).replace("telkomsel.","") || undefined;
             }
         }
 
         let msg =
-            "Hasil Recording " + topik + "\n" +
-            "Waktu Mulai: " + start + "\n" +
-            "Durasi: " + durasi + "\n" +
+            "*Topik: " + topik + "*\n" +
+            "Waktu Start Meeting: " + start + "\n" +
+            "Durasi Meeting: " + durasi + "\n" +
             "Size Recording: " + totalSize + "\n" +
             "Link Menonton: " + shareUrl + "\n\n"
         ;
 
         let msg2 =
-            "Recording terpisah " + topik + "\n\n" +
-            "1. Share Screen With Speaker View \n" +
-            ((sizeSSSV === undefined) ? "Tidak tersedia" : "Link: " + urlSSSV + " (" + sizeSSSV + ")\n\n") +
-            "2. Share Screen With Gallery View \n" +
-            ((sizeSSGV === undefined) ? "Tidak tersedia" : "Link: " + urlSSGV + " (" + sizeSSGV + ")\n\n") +
-            "3. Speaker View \n" +
-            ((sizeSV === undefined) ? "Tidak tersedia" : "Link: " + urlSV + " (" + sizeSV + ")\n\n") +
-            "4. Gallery View \n" +
-            ((sizeGV === undefined) ? "Tidak tersedia" : "Link: " + urlGV + " (" + sizeGV + ")\n\n") +
-            "5. Share Screen \n" +
-            ((sizeSS === undefined) ? "Tidak tersedia" : "Link: " + urlSS + " (" + sizeSS + ")\n\n") +
-            "6. Chat File \n" +
-            ((sizeCF === undefined) ? "Tidak tersedia" : "Link: " + urlCF + " (" + sizeCF + ")\n\n")
+            "*1. Share Screen With Speaker View*\n" +
+            ((sizeSSSV === undefined) ? "Tidak tersedia\n\n" : urlSSSV + " (" + sizeSSSV + ")\n\n") +
+            "*2. Share Screen With Gallery View*\n" +
+            ((sizeSSGV === undefined) ? "Tidak tersedia\n\n" : urlSSGV + " (" + sizeSSGV + ")\n\n") +
+            "*3. Speaker View*\n" +
+            ((sizeSV === undefined) ? "Tidak tersedia\n\n" : urlSV + " (" + sizeSV + ")\n\n") +
+            "*4. Gallery View*\n" +
+            ((sizeGV === undefined) ? "Tidak tersedia\n\n" : urlGV + " (" + sizeGV + ")\n\n") +
+            "*5. Share Screen*\n" +
+            ((sizeSS === undefined) ? "Tidak tersedia\n\n" : urlSS + " (" + sizeSS + ")\n\n") +
+            "*6. Chat File*\n" +
+            ((sizeCF === undefined) ? "Tidak tersedia\n\n" : urlCF + " (" + sizeCF + ")\n\n")
         ;
 
         await context.sendText(msg);
