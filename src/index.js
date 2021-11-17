@@ -63,11 +63,14 @@ function HandleMessage(context){
         else if(userMsg.substring(0,5) === '/info'){
             return getZoomInvite(context);
         }
-        else if(userMsg === '/help'){
-            return getHelp(context);
+        else if(userMsg.substring(0,4) === '/rec'){
+            return zoomRecord(context);
         }
         else if(userMsg.substring(0,7) === '/delete'){
             return deleteZoom(context);
+        }
+        else if(userMsg === '/help'){
+            return getHelp(context);
         }
         else if(userMsg === '/leave'){
             return leaveLine(context);
@@ -360,7 +363,7 @@ async function getMyMeetings(context) {
                 "layout": "vertical",
                 "contents": [{
                     "type": "text",
-                    "text": "Sekarang bisa start dua Zoom Meeting bersamaan. Cek Zoom Meeting on progress dengan keyword /live",
+                    "text": "BARU!!! Hasil Cloud recording bisa diakses di /rec (spasi) meeting ID.",
                     "color": "#FFFFFF",
                     "align": "center",
                     "gravity": "center",
@@ -371,6 +374,7 @@ async function getMyMeetings(context) {
             }
         }
     await context.sendFlex("Informasi Zoom Meeting", msg);
+    await context.sendText("PERHATIAN!!!\nDalam satu waktu yang bersamaan hanya boleh ada maksimal dua Zoom Meeting!");
 }
 
 async function startZoom(context){
@@ -532,4 +536,82 @@ async function deleteZoom(context){
     (status === 204) ? msg = "Zoom Meeting dengan ID " + id + " berhasil dibatalkan"
         : msg = "Zoom Meeting dengan ID " + id + " tidak ditemukan";
     await context.sendText(msg);
+}
+
+async function zoomRecord(context){
+    await updateToken();
+    const id = context.event.text.substring(5);
+
+    const request = async () => {
+        const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id +"/recordings", { headers: await getHeaderZoom() });
+        return [respon.status,respon.data] ;
+    }
+    const hasil = await request();
+    const data = hasil[1];
+
+    if(hasil[0] === 200){
+        let topik = data.topic;
+        let start = new Date(data.start_time).toLocaleString('id-ID',{dateStyle: 'full', timeStyle: 'short'});
+        let durasi = data.duration + " menit";
+        let totalSize = ((data.total_size)/1024/1024) + " MB";
+        let shareUrl = (data.share_url).replace("telkomsel.","");
+        let recData = data.recording_files;
+        let sizeSSSV, urlSSSV, sizeSSGV, urlSSGV, sizeSV, urlSV, sizeGV, urlGV, sizeSS, urlSS, sizeCF, urlCF;
+
+        for(let i = 0 ; i < (recData.length) ; i++){
+            let tipe = recData.recording_type[i];
+            switch(tipe){
+                case("shared_screen_with_speaker_view"):
+                    sizeSSSV = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    urlSSSV = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    break;
+                case("shared_screen_with_gallery_view"):
+                    sizeSSGV = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    urlSSGV = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    break;
+                case("speaker_view"):
+                    sizeSV = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    urlSV = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    break;
+                case("gallery_view"):
+                    sizeGV = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    urlGV = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    break;
+                case("shared_screen"):
+                    sizeSS = ((recData[i].file_size)/1024/1024) + " MB" || undefined;
+                    urlSS = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    break;
+                case("chat_file"):
+                    sizeCF = ((recData[i].file_size)/1024) + " KB" || undefined;
+                    urlCF = (recData[i].download_url).replace("telkomsel.","") || undefined;
+            }
+        }
+
+        let msg =
+            "Hasil Recording " + topik + "\n" +
+            "Waktu Mulai: " + start + "\n" +
+            "Durasi: " + durasi + "\n" +
+            "Size Recording: " + totalSize + "\n" +
+            "Link Menonton: " + shareUrl + "\n\n"
+        ;
+
+        let msg2 =
+            "Recording terpisah " + topik + "\n\n" +
+            "1. Share Screen With Speaker View \n" +
+            ((sizeSSSV === undefined) ? "Tidak tersedia" : "Link: " + urlSSSV + " (" + sizeSSSV + ")\n\n") +
+            "2. Share Screen With Gallery View \n" +
+            ((sizeSSGV === undefined) ? "Tidak tersedia" : "Link: " + urlSSGV + " (" + sizeSSGV + ")\n\n") +
+            "3. Speaker View \n" +
+            ((sizeSV === undefined) ? "Tidak tersedia" : "Link: " + urlSV + " (" + sizeSV + ")\n\n") +
+            "4. Gallery View \n" +
+            ((sizeGV === undefined) ? "Tidak tersedia" : "Link: " + urlGV + " (" + sizeGV + ")\n\n") +
+            "5. Share Screen \n" +
+            ((sizeSS === undefined) ? "Tidak tersedia" : "Link: " + urlSS + " (" + sizeSS + ")\n\n") +
+            "6. Chat File \n" +
+            ((sizeCF === undefined) ? "Tidak tersedia" : "Link: " + urlCF + " (" + sizeCF + ")\n\n")
+        ;
+
+        await context.sendText(msg);
+        await context.sendText(msg2);
+    }
 }
