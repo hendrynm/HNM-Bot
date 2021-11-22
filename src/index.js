@@ -656,7 +656,7 @@ async function setLink(context){
 }
 
 async function getLink(context){
-    const short = context.event.text;
+    const short = "'" + context.event.text + "'";
 
     const pool = new Pool(credentials);
     const check = async() => {
