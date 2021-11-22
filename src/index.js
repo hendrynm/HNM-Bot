@@ -75,6 +75,12 @@ function HandleMessage(context){
         else if(userMsg === '/leave'){
             return leaveLine(context);
         }
+        else if(userMsg.substring(0,5) === '/link'){
+            return setLink(context);
+        }
+        else if(userMsg.substring(0,3) === 'hnm'){
+            return getLink(context);
+        }
         else if(userMsg.substring(0,1) === "/"){
             return context.sendText("Kode tersebut belum tersedia.");
         }
@@ -586,6 +592,7 @@ async function zoomRecord(context){
                 case("chat_file"):
                     sizeCF = (Math.ceil((recData[i].file_size)/1024)) + " KB" || undefined;
                     urlCF = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    break;
             }
         }
 
@@ -615,4 +622,58 @@ async function zoomRecord(context){
         await context.sendText(msg);
         await context.sendText(msg2);
     }
+}
+
+async function setLink(context){
+    const msg = context.event.text.substring(7).split(' ');
+    const short = "'hnm/" + msg[0] + "'";
+    const asli = "'" + msg[1] + "'";
+
+    const pool = new Pool(credentials);
+    const check = async() => {
+        return await pool.query(`SELECT COUNT(*) FROM link WHERE short = ${short}`)
+    }
+    const cek = await check();
+    const jmlh = cek.count;
+
+    if(jmlh === 0){
+        const getID = async() => {
+            return await pool.query("SELECT id FROM link ORDER BY id DESC LIMIT 1");
+        }
+        const getData = await getID();
+        const id_skrg = getData.id + 1;
+
+        const sendData = async() => {
+            return await pool.query(`INSERT INTO link VALUES ${id_skrg}, ${short}, ${asli}`);
+        }
+        await sendData();
+        await context.sendText("Shortlink berhasil disimpan");
+    }
+    else{
+        await context.sendText("Shortlink ini sudah dipakai orang lain. Gunakan shortlink lainnya");
+    }
+    await pool.end();
+}
+
+async function getLink(context){
+    const short = context.event.text;
+
+    const pool = new Pool(credentials);
+    const check = async() => {
+        return await pool.query(`SELECT COUNT(*) FROM link WHERE short = ${short}`)
+    }
+    const cek = await check();
+    const jmlh = cek.count;
+
+    if(jmlh === 1){
+        const cekData = async() => {
+            return await pool.query("SELECT asli FROM link ORDER BY id DESC LIMIT 1");
+        }
+        const data = await cekData();
+        await context.sendText(data.asli);
+    }
+    else{
+        await context.sendText("Shortlink tidak ditemukan");
+    }
+    await pool.end();
 }
