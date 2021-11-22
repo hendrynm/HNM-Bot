@@ -667,7 +667,7 @@ async function getLink(context){
 
     if(jmlh === 1){
         const cekData = async() => {
-            return await pool.query("SELECT asli FROM link");
+            return await pool.query(`SELECT asli FROM link WHERE short = ${short}`);
         }
         const data = await cekData();
         await context.sendText(data.rows[0].asli);
