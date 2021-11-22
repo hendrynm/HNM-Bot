@@ -626,22 +626,22 @@ async function zoomRecord(context){
 
 async function setLink(context){
     const msg = context.event.text.substring(7).split(' ');
-    const short = "'hnm/" + msg[0] + "'";
-    const asli = "'" + msg[1] + "'";
+    const short = "'hnm/" + msg[1] + "'";
+    const asli = "'" + msg[2] + "'";
 
     const pool = new Pool(credentials);
     const check = async() => {
         return await pool.query(`SELECT COUNT(*) FROM link WHERE short = ${short}`)
     }
     const cek = await check();
-    const jmlh = cek.count;
+    const jmlh = cek.rows[0].count;
 
     if(jmlh === 0){
         const getID = async() => {
             return await pool.query("SELECT id FROM link ORDER BY id DESC LIMIT 1");
         }
         const getData = await getID();
-        const id_skrg = getData.id + 1;
+        const id_skrg = getData.rows[0].id + 1;
 
         const sendData = async() => {
             return await pool.query(`INSERT INTO link VALUES ${id_skrg}, ${short}, ${asli}`);
@@ -663,14 +663,14 @@ async function getLink(context){
         return await pool.query(`SELECT COUNT(*) FROM link WHERE short = ${short}`)
     }
     const cek = await check();
-    const jmlh = cek.count;
+    const jmlh = cek.rows[0].count;
 
     if(jmlh === 1){
         const cekData = async() => {
-            return await pool.query("SELECT asli FROM link ORDER BY id DESC LIMIT 1");
+            return await pool.query("SELECT asli FROM link");
         }
         const data = await cekData();
-        await context.sendText(data.asli);
+        await context.sendText(data.rows[0].asli);
     }
     else{
         await context.sendText("Shortlink tidak ditemukan");
