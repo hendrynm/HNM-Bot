@@ -50,36 +50,35 @@ function HandleMessage(context){
 
         if(userMsg.substring(0,1) === '/'){
             if(userMsg === '/zoom'){
-                getMyMeetings(context);
+                return getMyMeetings(context);
             }
             else if(userMsg === '/live'){
-                zoomOnProgress(context);
+                return zoomOnProgress(context);
             }
             else if(userMsg.substring(0,5) === '/book'){
-                scheduleZoom(context);
+                return scheduleZoom(context);
             }
             else if(userMsg.substring(0,6) === '/start'){
-                startZoom(context);
+                return startZoom(context);
             }
             else if(userMsg.substring(0,5) === '/info'){
-                getZoomInvite(context);
+                return getZoomInvite(context);
             }
             else if(userMsg.substring(0,4) === '/rec'){
-                zoomRecord(context);
+                return zoomRecord(context);
             }
             else if(userMsg.substring(0,7) === '/delete'){
-                deleteZoom(context);
+                return deleteZoom(context);
             }
             else if(userMsg === '/help'){
-                getHelp(context);
+                return getHelp(context);
             }
             else if(userMsg === '/leave'){
-                leaveLine(context);
+                return leaveLine(context);
             }
             else if(userMsg.substring(0,1) === "/"){
-                context.sendText("Kode tersebut belum tersedia.");
+                return context.sendText("Kode tersebut belum tersedia.");
             }
-            deleteProfile();
         }
     }
 }
@@ -122,13 +121,13 @@ async function getLineName(context) {
 
     const pool = new Pool(credentials);
     const requestData = async() => {
-        return await pool.query(`SELECT COUNT(userID) FROM line_user WHERE userID = ${userID}`);
+        return await pool.query(`SELECT COUNT(user_id) FROM line_user WHERE user_id = '${userID}'`);
     }
     const result = await requestData();
-
-    if (result.rows[0] === null){
+    console.log(result);
+    if (result.rows[0].count === '0'){
         const request1 = async() => {
-            return await pool.query(`INSERT INTO line_user VALUES(${userID},${displayName}) ON CONFLICT DO NOTHING`);
+            return await pool.query(`INSERT INTO line_user VALUES('${userID}','${displayName}')`);
         }
         await request1();
     }
@@ -179,6 +178,9 @@ async function updateToken(){
         }
         const data = await request();
 
+        console.log(data.access_token);
+        console.log(data.refresh_token);
+
         const acc_token = "('" + Buffer.from(data.access_token).toString('base64url') + "')";
         const ref_token = "('" + Buffer.from(data.refresh_token).toString('base64url') + "')";
         const now_token = String(new Date().getTime());
@@ -189,14 +191,6 @@ async function updateToken(){
         await request1();
     }
     await pool.end();
-}
-
-async function deleteProfile(){
-    const req = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/users/me/picture", { headers: await getHeaderZoom() });
-        return [respon.status] ;
-    }
-    await req();
 }
 
 async function scheduleZoom(context){
