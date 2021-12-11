@@ -48,41 +48,38 @@ function HandleMessage(context){
     if(context.event.isText){
         const userMsg = context.event.text;
 
-        if(userMsg === '/zoom'){
-            return getMyMeetings(context);
-        }
-        else if(userMsg === '/live'){
-            return zoomOnProgress(context);
-        }
-        else if(userMsg.substring(0,5) === '/book'){
-            return scheduleZoom(context);
-        }
-        else if(userMsg.substring(0,6) === '/start'){
-            return startZoom(context);
-        }
-        else if(userMsg.substring(0,5) === '/info'){
-            return getZoomInvite(context);
-        }
-        else if(userMsg.substring(0,4) === '/rec'){
-            return zoomRecord(context);
-        }
-        else if(userMsg.substring(0,7) === '/delete'){
-            return deleteZoom(context);
-        }
-        else if(userMsg === '/help'){
-            return getHelp(context);
-        }
-        else if(userMsg === '/leave'){
-            return leaveLine(context);
-        }
-        else if(userMsg.substring(0,5) === '/link'){
-            return setLink(context);
-        }
-        else if(userMsg.substring(0,3) === 'hnm'){
-            return getLink(context);
-        }
-        else if(userMsg.substring(0,1) === "/"){
-            return context.sendText("Kode tersebut belum tersedia.");
+        if(userMsg.substring(0,1) === '/'){
+            if(userMsg === '/zoom'){
+                getMyMeetings(context);
+            }
+            else if(userMsg === '/live'){
+                zoomOnProgress(context);
+            }
+            else if(userMsg.substring(0,5) === '/book'){
+                scheduleZoom(context);
+            }
+            else if(userMsg.substring(0,6) === '/start'){
+                startZoom(context);
+            }
+            else if(userMsg.substring(0,5) === '/info'){
+                getZoomInvite(context);
+            }
+            else if(userMsg.substring(0,4) === '/rec'){
+                zoomRecord(context);
+            }
+            else if(userMsg.substring(0,7) === '/delete'){
+                deleteZoom(context);
+            }
+            else if(userMsg === '/help'){
+                getHelp(context);
+            }
+            else if(userMsg === '/leave'){
+                leaveLine(context);
+            }
+            else if(userMsg.substring(0,1) === "/"){
+                context.sendText("Kode tersebut belum tersedia.");
+            }
+            deleteProfile();
         }
     }
 }
@@ -121,6 +118,21 @@ async function getLineName(context) {
         return respon.data;
     }
     const data = await request();
+    const displayName = data.displayName;
+
+    const pool = new Pool(credentials);
+    const requestData = async() => {
+        return await pool.query(`SELECT COUNT(userID) FROM line_user WHERE userID = ${userID}`);
+    }
+    const result = await requestData();
+
+    if (result.rows[0] === null){
+        const request1 = async() => {
+            return await pool.query(`INSERT INTO line_user VALUES(${userID},${displayName}) ON CONFLICT DO NOTHING`);
+        }
+        await request1();
+    }
+    await pool.end();
     return data.displayName;
 }
 
@@ -177,6 +189,14 @@ async function updateToken(){
         await request1();
     }
     await pool.end();
+}
+
+async function deleteProfile(){
+    const req = async () => {
+        const respon = await axios.get("https://api.zoom.us/v2/users/me/picture", { headers: await getHeaderZoom() });
+        return [respon.status] ;
+    }
+    await req();
 }
 
 async function scheduleZoom(context){
@@ -624,56 +644,3 @@ async function zoomRecord(context){
     }
 }
 
-async function setLink(context){
-    const msg = context.event.text.substring(6).split(' ');
-    const short = "'hnm/" + msg[0] + "'";
-    const asli = "'" + msg[1] + "'";
-
-    const pool = new Pool(credentials);
-    const check = async() => {
-        return await pool.query(`SELECT COUNT(*) FROM link WHERE short = ${short}`)
-    }
-    const cek = await check();
-    const jmlh = parseInt(cek.rows[0].count);
-
-    if(jmlh === 0){
-        const getID = async() => {
-            return await pool.query("SELECT id FROM link ORDER BY id DESC LIMIT 1");
-        }
-        const getData = await getID();
-        const id_skrg = parseInt(getData.rows[0].id) + 1;
-
-        const sendData = async() => {
-            return await pool.query(`INSERT INTO link VALUES(${id_skrg}, ${short}, ${asli})`);
-        }
-        await sendData();
-        await context.sendText(`Shortlink berhasil disimpan. Ketik ${short} untuk melihat link asli.`);
-    }
-    else{
-        await context.sendText("Shortlink ini sudah dipakai orang lain. Gunakan shortlink lainnya");
-    }
-    await pool.end();
-}
-
-async function getLink(context){
-    const short = "'" + context.event.text + "'";
-
-    const pool = new Pool(credentials);
-    const check = async() => {
-        return await pool.query(`SELECT COUNT(*) FROM link WHERE short = ${short}`)
-    }
-    const cek = await check();
-    const jmlh = parseInt(cek.rows[0].count);
-
-    if(jmlh === 1){
-        const cekData = async() => {
-            return await pool.query(`SELECT asli FROM link WHERE short = ${short}`);
-        }
-        const data = await cekData();
-        await context.sendText(data.rows[0].asli);
-    }
-    else{
-        await context.sendText("Shortlink tidak ditemukan");
-    }
-    await pool.end();
-}
