@@ -76,6 +76,9 @@ function HandleMessage(context){
             else if(userMsg === '/leave'){
                 return leaveLine(context);
             }
+            else if(userMsg === '/donate'){
+                return donate(context);
+            }
             else if(userMsg.substring(0,1) === "/"){
                 return context.sendText("Kode tersebut belum tersedia.");
             }
@@ -204,19 +207,27 @@ async function scheduleZoom(context){
     let passcode = setting[4];
     let pembuat = await getLineName(context);
 
-    if(
-        passcode === undefined ||
-        date.substring(4,5) !== "-" ||
-        date.substring(7,8) !== "-" ||
-        time.substring(2,3) !== ":" ||
-        /[a-zA-Z]/g.test(duration) ||
-        duration > 600 ||
-        passcode.length > 10
-    ){
-        msg = "Format keyword salah ⛔, silakan gunakan /help untuk melihat format keyword yang benar 😉";
+    if(passcode === undefined){
+        msg = "Format keyword salah ⛔, kirim /help untuk melihat format keyword yang benar 😉";
+    }
+    else if(date.substring(4,5) !== "-" || date.substring(7,8) !== "-"){
+        msg = "Format tanggal salah ⛔, pastikan menggunakan strip ( - )";
+    }
+    else if(time.substring(2,3) !== ":"){
+        msg = "Format jam salah ⛔, pastikan menggunakan titik dua ( : )";
+    }
+    else if(/[a-zA-Z]/g.test(duration)){
+        msg = "Durasi tidak boleh mengandung huruf ⛔";
+    }
+    else if(duration > 600){
+        msg = "Durasi meeting terlalu lama ⛔, tolong konfirmasi ke pembuat bot untuk schedule manual 😉";
+    }
+    else if(passcode.length > 10){
+        msg = "Passcode terlalu panjang ⛔, maksimal 10 digit";
     }
     else{
         await updateToken();
+        await context.sendText("Tunggu sebentar, kami sedang menjadwalkan Zoom");
         let time1 = date + "T" + time + ":00";
 
         let payload = {
@@ -263,10 +274,12 @@ async function scheduleZoom(context){
     }
 
     await context.sendText(msg);
+    await donate(context);
 }
 
 async function getMyMeetings(context) {
     await updateToken();
+    await context.sendText("Tunggu sebentar, kami sedang mengambil data Zoom.");
     const request = async () => {
         const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=upcoming", { headers: await getHeaderZoom() });
         return respon.data;
@@ -394,11 +407,12 @@ async function getMyMeetings(context) {
             }
         }
     await context.sendFlex("Informasi Zoom Meeting", msg);
-    await context.sendText("PERHATIAN!!!\nDalam satu waktu yang bersamaan hanya boleh ada maksimal dua Zoom Meeting!");
+    await context.sendText("PERHATIAN!!!\nDalam satu waktu yang bersamaan hanya boleh ada MAKSIMAL DUA Zoom Meeting!");
 }
 
 async function startZoom(context){
     await updateToken();
+    await deletePicture();
     const id = context.event.text.substring(7);
 
     const request = async () => {
@@ -406,6 +420,7 @@ async function startZoom(context){
         return [respon.status,respon.data] ;
     }
     const data = await request();
+
     let msg;
 
     if(data[0] === 200){
@@ -476,6 +491,7 @@ async function startZoom(context){
             };
     }
     await context.sendFlex("Start Zoom Meeting", msg);
+    await donate(context);
 }
 
 async function zoomOnProgress(context){
@@ -638,3 +654,21 @@ async function zoomRecord(context){
     }
 }
 
+async function deletePicture(){
+    const req = async () => {
+        const res = await axios.delete("https://api.zoom.us/v2/users/me/picture", { headers: await getHeaderZoom() });
+        return [res.status] ;
+    }
+    await req();
+}
+
+async function donate(context){
+    const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima donasi melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip ";
+    const msg2 = "*Seluruh layanan ini didukung oleh:*\n- Hendry Naufal Marbella\n- Naufal Budi Wirautama\n- Rifda Awalia Zuhroh";
+    await context.sendText(msg);
+    await context.sendText(msg2);
+}
+
+async function getParticipant(context){
+
+}
