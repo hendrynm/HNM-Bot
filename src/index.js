@@ -227,7 +227,7 @@ async function scheduleZoom(context){
     }
     else{
         await updateToken();
-        await context.sendText("Tunggu sebentar, kami sedang menjadwalkan Zoom");
+        context.sendText("Tunggu sebentar, kami sedang menjadwalkan Zoom");
         let time1 = date + "T" + time + ":00";
 
         let payload = {
@@ -279,7 +279,7 @@ async function scheduleZoom(context){
 
 async function getMyMeetings(context) {
     await updateToken();
-    await context.sendText("Tunggu sebentar, kami sedang mengambil data Zoom.");
+    context.sendText("Tunggu sebentar, kami sedang mengambil data Zoom.");
     const request = async () => {
         const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=upcoming", { headers: await getHeaderZoom() });
         return respon.data;
@@ -524,8 +524,8 @@ async function zoomOnProgress(context){
             }
         }
     }
-
     await context.sendText(message);
+    await donate(context);
 }
 
 async function getZoomInvite(context){
@@ -663,10 +663,8 @@ async function deletePicture(){
 }
 
 async function donate(context){
-    const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima donasi melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip ";
-    const msg2 = "*Seluruh layanan ini didukung oleh:*\n- Hendry Naufal Marbella\n- Naufal Budi Wirautama\n- Rifda Awalia Zuhroh";
+    const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima donasi melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip \n\n*Seluruh layanan HNM Bot didukung oleh:*\n- Hendry Naufal Marbella\n- Naufal Budi Wirautama\n- Rifda Awalia Zuhroh";
     await context.sendText(msg);
-    await context.sendText(msg2);
 }
 
 async function getParticipant(context){

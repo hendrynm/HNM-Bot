@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="PostgreSQL@Heroku" uuid="e4f1b6e7-93ca-4de2-8100-bc7a36a4d89d">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <schema-control>AUTOMATIC</schema-control>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://ec2-52-204-72-14.compute-1.amazonaws.com:5432/dbe2h8ai7q6hmh</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+  </component>
+</project>
