@@ -80,22 +80,22 @@ function HandleMessage(context){
                 return donate(context);
             }
             else if(userMsg.substring(0,1) === "/"){
-                return context.sendText("Kode tersebut belum tersedia.");
+                return context.replyText("Kode tersebut belum tersedia.");
             }
         }
     }
 }
 
-function getHelp(context) {
+async function getHelp(context) {
     let opening =
-        "*SELAMAT DATANG DI HENDRY BOT 👋*\n" +
+        "*SELAMAT DATANG DI HNM BOT 👋*\n" +
         "*Berikut adalah fitur Bot yang tersedia saat ini:*\n\n";
 
     let fitur =
         "*1. List Booking Zoom Meeting:*\n" +
         "Ketik /zoom\n\n" +
         "*2. Booking Zoom Meeting:*\n" +
-        "Ketik /book diikuti dengan topik rapat, tanggal rapat (YYYY-MM-DD), waktu rapat (HH:mm), durasi rapat (dalam menit), dan passcode (maksimal 10 karakter, boleh pake huruf). Setiap variabel dipisah menggunakan tanda koma berspasi ( , ).\nContoh: /book Rapat Bionix , 2021-08-31 , 19:00 , 60 , Satu234\n\n" +
+        "Ketik /book diikuti dengan Judul, tanggal (YYYY-MM-DD), waktu (HH:mm), durasi (dalam menit), dan passcode (maksimal 10 karakter, boleh pake huruf). Setiap variabel dipisah menggunakan tanda koma berspasi ( , ).\nContoh: /book Rapat Bionix , 2021-08-31 , 19:00 , 60 , Satu234\n\n" +
         "*3. Start Zoom Meeting:*\n" +
         "Ketik /start spasi Meeting ID.\nContoh: /start 8275960095\n\n" +
         "*4. Cancel Zoom Meeting:*\n" +
@@ -103,13 +103,15 @@ function getHelp(context) {
         "*5. Invitation Zoom Meeting:*\n" +
         "Ketik /info spasi Meeting ID.\nContoh: /info 8275960095\n\n" +
         "*6. Zoom Meeting on progress:*\n" +
-        "Ketik /live";
+        "Ketik /live\n\n" +
+        "*7. Cek Cloud Recording:*\n" +
+        "Ketik /rec spasi Meeting ID.\nContoh: /rec 8275960095\n\n";
 
     let ending =
-        "Jika kamu memiliki kritik, saran, atau ide untuk pengembangan Bot ini, hubungi Hendry melalui: \nLine: https://line.me/ti/p/~hendry.naufal \nWhatsApp: https://wa.me/6285155034580";
+        "Jika kamu memiliki kritik, saran, atau ide untuk pengembangan Bot ini, hubungi Hendry melalui: \nLine: https://line.me/ti/p/~hendry.naufal \nWhatsApp: https://wa.me/6285331303015 . Kamu juga dapat memberikan dukungan melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip .";
 
     let msg = opening + fitur + ending;
-    context.sendText(msg);
+    await context.replyText(msg);
 }
 
 async function getLineName(context) {
@@ -141,7 +143,7 @@ async function getLineName(context) {
 function leaveLine(context) {
     const groupID = context._event._rawEvent.source.groupId || undefined;
     const roomID = context._event._rawEvent.source.roomId || undefined;
-    context.sendText("Terima kasih telah menggunakan HNM BOT. Sampai jumpa 👋");
+    context.replyText("Terima kasih telah menggunakan HNM BOT. Sampai jumpa 👋");
 
     if(roomID === undefined) {
         axios.post("https://api.line.me/v2/bot/group/" + groupID + "/leave", [], {headers: headerLine});
@@ -227,7 +229,6 @@ async function scheduleZoom(context){
     }
     else{
         await updateToken();
-        context.sendText("Tunggu sebentar, kami sedang menjadwalkan Zoom");
         let time1 = date + "T" + time + ":00";
 
         let payload = {
@@ -273,13 +274,12 @@ async function scheduleZoom(context){
             "Passcode: " + passcode + "\n";
     }
 
-    await context.sendText(msg);
+    await context.replyText(msg);
     await donate(context);
 }
 
 async function getMyMeetings(context) {
     await updateToken();
-    context.sendText("Tunggu sebentar, kami sedang mengambil data Zoom.");
     const request = async () => {
         const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=upcoming", { headers: await getHeaderZoom() });
         return respon.data;
@@ -406,8 +406,8 @@ async function getMyMeetings(context) {
                 "backgroundColor": "#0c2461"
             }
         }
-    await context.sendFlex("Informasi Zoom Meeting", msg);
-    await context.sendText("PERHATIAN!!!\nDalam satu waktu yang bersamaan hanya boleh ada MAKSIMAL DUA Zoom Meeting!");
+    await context.replyFlex("Informasi Zoom Meeting", msg);
+    await context.replyText("PERHATIAN!!!\nDalam satu waktu yang bersamaan hanya boleh ada MAKSIMAL DUA Zoom Meeting!");
 }
 
 async function startZoom(context){
@@ -490,7 +490,7 @@ async function startZoom(context){
                 }
             };
     }
-    await context.sendFlex("Start Zoom Meeting", msg);
+    await context.replyFlex("Start Zoom Meeting", msg);
     await donate(context);
 }
 
@@ -524,7 +524,7 @@ async function zoomOnProgress(context){
             }
         }
     }
-    await context.sendText(message);
+    await context.replyText(message);
     await donate(context);
 }
 
@@ -557,7 +557,7 @@ async function getZoomInvite(context){
         "Meeting ID: " + zoomID.substring(0,3) + " " + zoomID.substring(3,7) + " " + zoomID.substring(7) + "\n" +
         "Passcode: " + pass + "\n";
 
-    await context.sendText(message);
+    await context.replyText(message);
 }
 
 async function deleteZoom(context){
@@ -573,7 +573,7 @@ async function deleteZoom(context){
     let msg;
     (status === 204) ? msg = "Zoom Meeting dengan ID " + id + " berhasil dibatalkan"
         : msg = "Zoom Meeting dengan ID " + id + " tidak ditemukan";
-    await context.sendText(msg);
+    await context.replyText(msg);
 }
 
 async function zoomRecord(context){
@@ -593,7 +593,7 @@ async function zoomRecord(context){
         let durasi = data.duration + " menit";
         let totalSize = (Math.ceil((data.total_size)/1024/1024)) + " MB";
         let shareUrl = (data.share_url).replace("telkomsel.","");
-        let recData = data.recording_files
+        let recData = data.recording_files;
         let sizeSSSV, urlSSSV, sizeSSGV, urlSSGV, sizeSV, urlSV, sizeGV, urlGV, sizeSS, urlSS, sizeCF, urlCF;
 
         for(let i = 0 ; i < (recData.length) ; i++){
@@ -649,8 +649,8 @@ async function zoomRecord(context){
             ((sizeCF === undefined) ? "Tidak tersedia\n\n" : urlCF + " (" + sizeCF + ")\n\n")
         ;
 
-        await context.sendText(msg);
-        await context.sendText(msg2);
+        await context.replyText(msg);
+        await context.replyText(msg2);
     }
 }
 
@@ -663,8 +663,8 @@ async function deletePicture(){
 }
 
 async function donate(context){
-    const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima donasi melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip \n\n*Seluruh layanan HNM Bot didukung oleh:*\n- Hendry Naufal Marbella\n- Naufal Budi Wirautama\n- Rifda Awalia Zuhroh";
-    await context.sendText(msg);
+    const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima dukungan melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip \n\n*Seluruh layanan HNM Bot didukung oleh:*\n HNM, NBW, dan RAZ.";
+    await context.replyText(msg);
 }
 
 async function getParticipant(context){
