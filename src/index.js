@@ -117,6 +117,7 @@ async function getHelp(context) {
         "Jika kamu memiliki kritik, saran, atau ide untuk pengembangan Bot ini, hubungi Hendry melalui: \nLine: https://line.me/ti/p/~hendry.naufal \nWhatsApp: https://wa.me/6285331303015 . Kamu juga dapat memberikan dukungan melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip .";
 
     let msg = opening + fitur + ending;
+    await context.replySticker({packageId: "8522", stickerId: "16581282"});
     await context.replyText(msg);
 }
 
@@ -149,6 +150,7 @@ async function getLineName(context) {
 function leaveLine(context) {
     const groupID = context._event._rawEvent.source.groupId || undefined;
     const roomID = context._event._rawEvent.source.roomId || undefined;
+    context.replySticker({packageId: "6370", stickerId: "11088025"});
     context.replyText("Terima kasih telah menggunakan HNM BOT. Sampai jumpa 👋");
 
     if(roomID === undefined) {
@@ -279,7 +281,7 @@ async function scheduleZoom(context){
             "Meeting ID: " + meetID.substring(0,3) + " " + meetID.substring(3,7) + " " + meetID.substring(7) + "\n" +
             "Passcode: " + passcode + "\n";
     }
-
+    await context.replySticker({packageId: "8522", stickerId: "16581266"});
     await context.replyText(msg);
     await donate(context);
 }
@@ -412,6 +414,7 @@ async function getMyMeetings(context) {
                 "backgroundColor": "#0c2461"
             }
         }
+    await context.replySticker({packageId: "8522", stickerId: "16581273"});
     await context.replyFlex("Informasi Zoom Meeting", msg);
     await context.replyText("PERHATIAN!!!\nDalam satu waktu yang bersamaan hanya boleh ada MAKSIMAL DUA Zoom Meeting!");
 }
@@ -496,6 +499,7 @@ async function startZoom(context){
                 }
             };
     }
+    await context.replySticker({packageId: "8522", stickerId: "16581289"});
     await context.replyFlex("Start Zoom Meeting", msg);
 }
 
@@ -529,6 +533,7 @@ async function zoomOnProgress(context){
             }
         }
     }
+    await context.replySticker({packageId: "6370", stickerId: "11088035"});
     await context.replyText(message);
 }
 
@@ -680,6 +685,7 @@ async function deletePicture(){
 
 async function donate(context){
     const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima dukungan melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip \n\n*Seluruh layanan HNM Bot didukung oleh:* HNM, NBW, dan RAZ.";
+    await context.replySticker({packageId: "8522", stickerId: "16581281"});
     await context.replyText(msg);
 }
 
