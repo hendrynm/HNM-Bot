@@ -420,87 +420,103 @@ async function getMyMeetings(context) {
 }
 
 async function startZoom(context){
-    await updateToken();
-    await deletePicture();
-    const id = context.event.text.substring(7);
+    if(await checkZoomOnProgress() === true){
+        await updateToken();
+        await deletePicture();
+        const id = context.event.text.substring(7);
 
-    const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
-        return [respon.status,respon.data] ;
-    }
-    const data = await request();
+        const request = async () => {
+            const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
+            return [respon.status,respon.data] ;
+        }
+        const data = await request();
+        let msg;
 
-    let msg;
-
-    if(data[0] === 200){
-        let startUrl = data[1].start_url;
-        let newUrl = startUrl.replace("telkomsel.","");
-        msg =
-            {
-                "type": "bubble",
-                "size": "kilo",
-                "body": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                        {
-                            "type": "text",
-                            "text": "Silakan tekan tombol di bawah ini untuk memulai Zoom Meeting",
-                            "wrap": true,
-                            "color": "#FFFFFF",
-                            "size": "sm",
-                            "flex": 5
-                        },
-                        {
-                            "type": "button",
-                            "action": {
-                                "type": "uri",
-                                "uri": newUrl,
-                                "label": "Start Meeting"
-                            },
-                            "style": "primary",
-                            "height": "sm",
-                            "color": "#0c2461",
-                            "gravity": "center",
-                            "margin": "md",
-                            "flex": 3
-                        }
-                    ]
-                },
-                "styles": {
+        if(data[0] === 200){
+            let startUrl = data[1].start_url;
+            let newUrl = startUrl.replace("telkomsel.","");
+            msg =
+                {
+                    "type": "bubble",
+                    "size": "kilo",
                     "body": {
-                        "backgroundColor": "#4a69bd"
+                        "type": "box",
+                        "layout": "vertical",
+                        "contents": [
+                            {
+                                "type": "text",
+                                "text": "Silakan tekan tombol di bawah ini untuk memulai Zoom Meeting",
+                                "wrap": true,
+                                "color": "#FFFFFF",
+                                "size": "sm",
+                                "flex": 5
+                            },
+                            {
+                                "type": "button",
+                                "action": {
+                                    "type": "uri",
+                                    "uri": newUrl,
+                                    "label": "Start Meeting"
+                                },
+                                "style": "primary",
+                                "height": "sm",
+                                "color": "#0c2461",
+                                "gravity": "center",
+                                "margin": "md",
+                                "flex": 3
+                            }
+                        ]
+                    },
+                    "styles": {
+                        "body": {
+                            "backgroundColor": "#4a69bd"
+                        }
                     }
-                }
-            };
+                };
+        }
+        else{
+            msg =
+                {
+                    "type": "bubble",
+                    "size": "kilo",
+                    "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "contents": [
+                            {
+                                "type": "text",
+                                "text": "Zoom Meetings dengan ID " + id + " tidak ditemukan",
+                                "wrap": true,
+                                "color": "#FFFFFF",
+                                "size": "xs"
+                            }
+                        ]
+                    },
+                    "styles": {
+                        "body": {
+                            "backgroundColor": "#4a69bd"
+                        }
+                    }
+                };
+        }
+        await context.replySticker({packageId: "8522", stickerId: "16581289"});
+        await context.replyFlex("Start Zoom Meeting", msg);
     }
     else{
-        msg =
-            {
-                "type": "bubble",
-                "size": "kilo",
-                "body": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                        {
-                            "type": "text",
-                            "text": "Zoom Meetings dengan ID " + id + " tidak ditemukan",
-                            "wrap": true,
-                            "color": "#FFFFFF",
-                            "size": "xs"
-                        }
-                    ]
-                },
-                "styles": {
-                    "body": {
-                        "backgroundColor": "#4a69bd"
-                    }
-                }
-            };
+        await context.replyText("Saat ini sedang ada 2 Zoom Meeting yang berjalan. Silakan Stop Meeting pada salah satu Zoom Meeting berikut untuk melanjutkan.");
+        await zoomOnProgress(context);
     }
-    await context.replySticker({packageId: "8522", stickerId: "16581289"});
-    await context.replyFlex("Start Zoom Meeting", msg);
+}
+
+async function checkZoomOnProgress(){
+    await updateToken();
+    const request = async () => {
+        const respon = await axios.get("https://api.zoom.us/v2/users/me/meetings?type=live", { headers: await getHeaderZoom() });
+        return respon.data ;
+    }
+    const hasil = await request();
+    const count = hasil.total_records;
+    return (count <= 2);
 }
 
 async function zoomOnProgress(context){
