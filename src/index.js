@@ -516,7 +516,7 @@ async function checkZoomOnProgress(){
     }
     const hasil = await request();
     const count = hasil.total_records;
-    return (count <= 2);
+    return (count < 2);
 }
 
 async function zoomOnProgress(context){
