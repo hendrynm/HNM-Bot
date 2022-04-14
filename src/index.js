@@ -98,7 +98,7 @@ async function getHelp(context) {
         "*Berikut adalah fitur Bot yang tersedia saat ini:*\n\n";
 
     let fitur =
-        "*1. List Booking Zoom Meeting:*\n" +
+        "*1. List jadwal Zoom Meeting yang sudah di-Booking:*\n" +
         "Ketik /zoom\n\n" +
         "*2. Booking Zoom Meeting:*\n" +
         "Ketik /book diikuti dengan Judul, tanggal (YYYY-MM-DD), waktu (HH:mm), durasi (dalam menit), dan passcode (maksimal 10 karakter, boleh pake huruf). Setiap variabel dipisah menggunakan tanda koma berspasi ( , ).\nContoh: /book Rapat Bionix , 2021-08-31 , 19:00 , 60 , Satu234\n\n" +
@@ -111,7 +111,11 @@ async function getHelp(context) {
         "*6. Zoom Meeting on progress:*\n" +
         "Ketik /live\n\n" +
         "*7. Cek Cloud Recording:*\n" +
-        "Ketik /rec spasi Meeting ID.\nContoh: /rec 8275960095\n\n";
+        "Ketik /rec spasi Meeting ID.\nContoh: /rec 8275960095\n\n" +
+        "*8. Cek partisipan di Zoom Meeting:*\n" +
+        "Ketik /part spasi Meeting ID.\nContoh: /part 8275960095\n\n" +
+        "*9. Cek riwayat pemakaian di Zoom Meeting:*\n" +
+        "Ketik /history spasi Meeting ID.\nContoh: /history 8275960095\n\n";
 
     let ending =
         "Jika kamu memiliki kritik, saran, atau ide untuk pengembangan Bot ini, hubungi Hendry melalui: \nLine: https://line.me/ti/p/~hendry.naufal \nWhatsApp: https://wa.me/6285331303015 . Kamu juga dapat memberikan dukungan melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip .";
@@ -227,9 +231,9 @@ async function scheduleZoom(context){
         msg = "Format jam salah ⛔, pastikan menggunakan titik dua ( : )";
     }
     else if(/[a-zA-Z]/g.test(duration)){
-        msg = "Durasi tidak boleh mengandung huruf ⛔";
+        msg = "Durasi meeting tidak boleh mengandung huruf ⛔";
     }
-    else if(duration > 600){
+    else if(duration > 360){
         msg = "Durasi meeting terlalu lama ⛔, tolong konfirmasi ke pembuat bot untuk schedule manual 😉";
     }
     else if(passcode.length > 10){
@@ -383,7 +387,7 @@ async function getMyMeetings(context) {
                 "layout": "vertical",
                 "contents": [{
                     "type": "text",
-                    "text": "Informasi Zoom Meeting",
+                    "text": "Informasi Jadwal Pemakaian Zoom Meeting",
                     "color": "#FFFFFF",
                     "align": "center",
                     "gravity": "center",
@@ -404,7 +408,7 @@ async function getMyMeetings(context) {
                 "layout": "vertical",
                 "contents": [{
                     "type": "text",
-                    "text": "BARU!!! Hasil Cloud recording bisa diakses di /rec (spasi) meeting ID.",
+                    "text": "Perlu bantuan? ketik /help dan kami akan membantumu.",
                     "color": "#FFFFFF",
                     "align": "center",
                     "gravity": "center",
@@ -415,7 +419,7 @@ async function getMyMeetings(context) {
             }
         }
     await context.replySticker({packageId: "8522", stickerId: "16581273"});
-    await context.replyFlex("Informasi Zoom Meeting", msg);
+    await context.replyFlex("Informasi Jadwal Pemakaian Zoom Meeting", msg);
     await context.replyText("PERHATIAN!!!\nDalam satu waktu yang bersamaan hanya boleh ada MAKSIMAL DUA Zoom Meeting!");
 }
 
@@ -503,7 +507,7 @@ async function startZoom(context){
         await context.replyFlex("Start Zoom Meeting", msg);
     }
     else{
-        await context.replyText("Saat ini sedang ada 2 Zoom Meeting yang berjalan. Silakan Stop Meeting pada salah satu Zoom Meeting berikut untuk melanjutkan.");
+        await context.replyText("Saat ini sedang ada dua Zoom Meeting yang berjalan bersamaan. Silakan akhiri salah satu Zoom Meeting berikut untuk melanjutkan.");
         await zoomOnProgress(context);
     }
 }
@@ -528,10 +532,10 @@ async function zoomOnProgress(context){
     const hasil = await request();
     const meetings = hasil.meetings;
     console.log(meetings);
-    let message = "Zoom Meeting yang sedang digunakan sekarang:\n";
+    let message = "Daftar Zoom Meeting yang sedang digunakan sekarang:\n";
 
     if(meetings[0] == null){
-        message = message + "\nTidak ada Zoom Meeting yang sedang berjalan 😄";
+        message = message + "\nTidak ada 😄";
     }
     else{
         for(let i=0 ; i < meetings.length ; ++i){
@@ -604,8 +608,8 @@ async function deleteZoom(context){
     const status = await request();
 
     let msg;
-    (status === 204) ? msg = "Zoom Meeting dengan ID " + id + " berhasil dibatalkan"
-        : msg = "Zoom Meeting dengan ID " + id + " tidak ditemukan";
+    (status === 204) ? msg = "Zoom Meeting dengan ID " + id + " berhasil dibatalkan."
+        : msg = "Zoom Meeting dengan ID " + id + " tidak ditemukan.";
     await context.replyText(msg);
 }
 
@@ -669,6 +673,7 @@ async function zoomRecord(context){
         ;
 
         let msg2 =
+            "*Daftar Link Download per Jenis Recording: \n\n*" +
             "*1. Share Screen With Speaker View*\n" +
             ((sizeSSSV === undefined) ? "Tidak tersedia\n\n" : urlSSSV + " (" + sizeSSSV + ")\n\n") +
             "*2. Share Screen With Gallery View*\n" +
@@ -700,7 +705,7 @@ async function deletePicture(){
 }
 
 async function donate(context){
-    const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima dukungan melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip \n\n*Seluruh layanan HNM Bot didukung oleh:* HNM, NBW, dan RAZ.";
+    const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima dukungan melalui https://trakteer.id/hendrynm/tip \n\n*Seluruh layanan HNM Bot didukung oleh:* HNM, N, NBW, dan RAZ.";
     await context.replySticker({packageId: "8522", stickerId: "16581281"});
     await context.replyText(msg);
 }
@@ -719,6 +724,9 @@ async function getPastMeeting(context){
     if(hasil[0] === 200){
         const data1 = hasil[1].meetings;
         const sorted = data1.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+
+        msg = msg + "*TERBARU*\n" + "Unique ID: " + sorted[i].uuid + "\nWaktu Mulai: " +
+            new Date(sorted[i].start_time).toLocaleString('id-ID', {dateStyle: 'full', timeStyle: 'short'}) + "\n\n";
 
         for(let i=0 ; i < sorted.length ; i++){
             msg = msg + "Unique ID: " + sorted[i].uuid + "\nWaktu Mulai: " +
@@ -766,7 +774,8 @@ async function getParticipant(context){
                 data = hasil2.participants;
             }
         }
-        msg = "*Daftar Kehadiran di Zoom Meeting*\nTotal Kehadiran: " + konten.length + " orang.\n\n";
+        msg = "*Daftar Kehadiran di Zoom Meeting*\n*Total Kehadiran: " + konten.length + " orang.*\n\n";
+
         for(let i=0 ; i < konten.length ; i++){
             msg = msg + (i+1) + ". " + konten[i] + "\n";
         }
