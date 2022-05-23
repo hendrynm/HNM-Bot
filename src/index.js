@@ -94,14 +94,14 @@ function HandleMessage(context){
 
 async function getHelp(context) {
     let opening =
-        "*SELAMAT DATANG DI HNM BOT 👋*\n" +
+        "*SELAMAT DATANG DI tekan.id BOT 👋*\n" +
         "*Berikut adalah fitur Bot yang tersedia saat ini:*\n\n";
 
     let fitur =
         "*1. List jadwal Zoom Meeting yang sudah di-Booking:*\n" +
         "Ketik /zoom\n\n" +
         "*2. Booking Zoom Meeting:*\n" +
-        "Ketik /book diikuti dengan Judul, tanggal (YYYY-MM-DD), waktu (HH:mm), durasi (dalam menit), dan passcode (maksimal 10 karakter, boleh pake huruf). Setiap variabel dipisah menggunakan tanda koma berspasi ( , ).\nContoh: /book Rapat Bionix , 2021-08-31 , 19:00 , 60 , Satu234\n\n" +
+        "Ketik /book diikuti dengan Judul, tanggal (YYYY-MM-DD), waktu (HH:mm), durasi (dalam menit), dan passcode (maksimal 10 karakter, boleh pake huruf). Setiap variabel dipisah menggunakan tanda koma berspasi ( , ).\nContoh: /book Kerja Kelompok Alpro , 2021-08-31 , 19:00 , 60 , Satu234\n\n" +
         "*3. Start Zoom Meeting:*\n" +
         "Ketik /start spasi Meeting ID.\nContoh: /start 8275960095\n\n" +
         "*4. Cancel Zoom Meeting:*\n" +
@@ -155,7 +155,7 @@ function leaveLine(context) {
     const groupID = context._event._rawEvent.source.groupId || undefined;
     const roomID = context._event._rawEvent.source.roomId || undefined;
     context.replySticker({packageId: "6370", stickerId: "11088025"});
-    context.replyText("Terima kasih telah menggunakan HNM BOT. Sampai jumpa 👋");
+    context.replyText("Terima kasih telah menggunakan tekan.id BOT. Sampai jumpa 👋");
 
     if(roomID === undefined) {
         axios.post("https://api.line.me/v2/bot/group/" + groupID + "/leave", [], {headers: headerLine});
@@ -705,7 +705,7 @@ async function deletePicture(){
 }
 
 async function donate(context){
-    const msg = "Terima kasih sudah menggunakan layanan HNM Bot. Saat ini kami menerima dukungan melalui https://trakteer.id/hendrynm/tip \n\n*Seluruh layanan HNM Bot didukung oleh:* HNM, N, NBW, dan RAZ.";
+    const msg = "Terima kasih sudah menggunakan layanan tekan.id Bot. Saat ini kami menerima dukungan melalui https://trakteer.id/hendrynm/tip *";
     await context.replySticker({packageId: "8522", stickerId: "16581281"});
     await context.replyText(msg);
 }
