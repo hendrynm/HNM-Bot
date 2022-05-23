@@ -725,10 +725,10 @@ async function getPastMeeting(context){
         const data1 = hasil[1].meetings;
         const sorted = data1.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
 
-        msg = msg + "*TERBARU*\n" + "Unique ID: " + sorted[i].uuid + "\nWaktu Mulai: " +
-            new Date(sorted[i].start_time).toLocaleString('id-ID', {dateStyle: 'full', timeStyle: 'short'}) + "\n\n";
+        msg = msg + "*TERBARU*\n" + "Unique ID: " + sorted[0].uuid + "\nWaktu Mulai: " +
+            new Date(sorted[0].start_time).toLocaleString('id-ID', {dateStyle: 'full', timeStyle: 'short'}) + "\n\n";
 
-        for(let i=0 ; i < sorted.length ; i++){
+        for(let i=1 ; i < sorted.length ; i++){
             msg = msg + "Unique ID: " + sorted[i].uuid + "\nWaktu Mulai: " +
                 new Date(sorted[i].start_time).toLocaleString('id-ID', {dateStyle: 'full', timeStyle: 'short'}) + "\n\n";
         }
