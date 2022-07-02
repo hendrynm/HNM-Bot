@@ -82,9 +82,6 @@ function HandleMessage(context){
             else if(userMsg === '/leave'){
                 return leaveLine(context);
             }
-            else if(userMsg === '/donate'){
-                return donate(context);
-            }
             else if(userMsg.substring(0,1) === "/"){
                 return context.replyText("Kode tersebut belum tersedia.");
             }
@@ -118,7 +115,7 @@ async function getHelp(context) {
         "Ketik /history spasi Meeting ID.\nContoh: /history 8275960095\n\n";
 
     let ending =
-        "Jika kamu memiliki kritik, saran, atau ide untuk pengembangan Bot ini, hubungi Hendry melalui: \nLine: https://line.me/ti/p/~hendry.naufal \nWhatsApp: https://wa.me/6285331303015 . Kamu juga dapat memberikan dukungan melalui platform Trakteer yang bisa diakses di https://trakteer.id/hendrynm/tip .";
+        "Jika kamu memiliki kritik, saran, atau ide untuk pengembangan Bot ini, hubungi Hendry melalui: \nLine: https://line.me/ti/p/~hendry.naufal \nWhatsApp: https://wa.me/6285331303015 .";
 
     let msg = opening + fitur + ending;
     await context.replySticker({packageId: "8522", stickerId: "16581282"});
@@ -287,7 +284,6 @@ async function scheduleZoom(context){
     }
     await context.replySticker({packageId: "8522", stickerId: "16581266"});
     await context.replyText(msg);
-    await donate(context);
 }
 
 async function getMyMeetings(context) {
@@ -702,12 +698,6 @@ async function deletePicture(){
         return [res.status] ;
     }
     await req();
-}
-
-async function donate(context){
-    const msg = "Terima kasih sudah menggunakan layanan tekan.id Bot. Saat ini kami menerima dukungan melalui https://trakteer.id/hendrynm/tip *";
-    await context.replySticker({packageId: "8522", stickerId: "16581281"});
-    await context.replyText(msg);
 }
 
 async function getPastMeeting(context){
