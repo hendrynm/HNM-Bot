@@ -47,43 +47,49 @@ module.exports = function App(){
 function HandleMessage(context){
     if(context.event.isText){
         const userMsg = context.event.text;
+        const maintenance = process.env.MAINTENANCE_MODE;
 
         if(userMsg.substring(0,1) === '/'){
-            if(userMsg === '/zoom'){
-                return getMyMeetings(context);
+            if(maintenance === 'ON'){
+                return context.replyText("Mohon maaf, saat ini kami sedang melakukan *maintenance*. Silakan coba kembali pada waktu lain.");
             }
-            else if(userMsg === '/live'){
-                return zoomOnProgress(context);
-            }
-            else if(userMsg.substring(0,5) === '/book'){
-                return scheduleZoom(context);
-            }
-            else if(userMsg.substring(0,6) === '/start'){
-                return startZoom(context);
-            }
-            else if(userMsg.substring(0,5) === '/info'){
-                return getZoomInvite(context);
-            }
-            else if(userMsg.substring(0,4) === '/rec'){
-                return zoomRecord(context);
-            }
-            else if(userMsg.substring(0,8) === '/history'){
-                return getPastMeeting(context);
-            }
-            else if(userMsg.substring(0,7) === '/delete'){
-                return deleteZoom(context);
-            }
-            else if(userMsg.substring(0,5) === '/part'){
-                return getParticipant(context);
-            }
-            else if(userMsg === '/help'){
-                return getHelp(context);
-            }
-            else if(userMsg === '/leave'){
-                return leaveLine(context);
-            }
-            else if(userMsg.substring(0,1) === "/"){
-                return context.replyText("Kode tersebut belum tersedia.");
+            else{
+                if(userMsg === '/zoom'){
+                    return getMyMeetings(context);
+                }
+                else if(userMsg === '/live'){
+                    return zoomOnProgress(context);
+                }
+                else if(userMsg.substring(0,5) === '/book'){
+                    return scheduleZoom(context);
+                }
+                else if(userMsg.substring(0,6) === '/start'){
+                    return startZoom(context);
+                }
+                else if(userMsg.substring(0,5) === '/info'){
+                    return getZoomInvite(context);
+                }
+                else if(userMsg.substring(0,4) === '/rec'){
+                    return zoomRecord(context);
+                }
+                else if(userMsg.substring(0,8) === '/history'){
+                    return getPastMeeting(context);
+                }
+                else if(userMsg.substring(0,7) === '/delete'){
+                    return deleteZoom(context);
+                }
+                else if(userMsg.substring(0,5) === '/part'){
+                    return getParticipant(context);
+                }
+                else if(userMsg === '/help'){
+                    return getHelp(context);
+                }
+                else if(userMsg === '/leave'){
+                    return leaveLine(context);
+                }
+                else if(userMsg.substring(0,1) === "/"){
+                    return context.replyText("Kode tersebut belum tersedia.");
+                }
             }
         }
     }
