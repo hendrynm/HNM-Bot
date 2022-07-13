@@ -316,7 +316,7 @@ async function getMyMeetings(context) {
         if (id === '' || id === null) {
             break;
         } else {
-            if (type === 2) {
+            if (type === 2 || type === 8) {
                 konten.push(
                     {
                         "type": "box",
