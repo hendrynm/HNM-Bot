@@ -5,14 +5,12 @@ const { router, line } = require('bottender/router');
 const axios = require('axios');
 
 // POSTGRESQL
-const { Pool } = require('pg');
+const mariadb = require('mariadb');
 const credentials = {
-    host: process.env.POSTGRESQL_HOST,
-    database: process.env.POSTGRESQL_DATABASE,
-    user: process.env.POSTGRESQL_USERNAME,
-    password: process.env.POSTGRESQL_PASSWORD,
-    port: process.env.POSTGRESQL_PORT,
-    ssl: { rejectUnauthorized: false }
+    host: process.env.MARIADB_HOST,
+    database: process.env.MARIADB_DATABASE,
+    user: process.env.MARIADB_USERNAME,
+    password: process.env.MARIADB_PASSWORD
 };
 
 // LINE API HEADER
@@ -23,12 +21,12 @@ const headerLine = {
 
 // ZOOM API HEADER
 async function getHeaderZoom() {
-    const pool = new Pool(credentials);
+    const pool = mariadb.createPool(credentials);
     const requestToken = async () => {
-        return await pool.query("SELECT zoom_token FROM data WHERE id = 1");
+        return await pool.query("SELECT token FROM zoom WHERE id = 1");
     }
     const ambilToken = await requestToken();
-    const token = Buffer.from((ambilToken.rows[0].zoom_token),'base64url').toString('utf-8');
+    const token = Buffer.from((ambilToken.rows[0].token),'base64url').toString('utf-8');
 
     return {
         "Content-Type": "application/json; charset=UTF-8",
@@ -138,15 +136,15 @@ async function getLineName(context) {
     const data = await request();
     const displayName = data.displayName;
 
-    const pool = new Pool(credentials);
+    const pool = mariadb.createPool(credentials);
     const requestData = async() => {
-        return await pool.query(`SELECT COUNT(user_id) FROM line_user WHERE user_id = '${userID}'`);
+        return await pool.query(`SELECT COUNT(id_user) FROM line WHERE user_id = '${userID}'`);
     }
     const result = await requestData();
     console.log(result);
     if (result.rows[0].count === '0'){
         const request1 = async() => {
-            return await pool.query(`INSERT INTO line_user VALUES('${userID}','${displayName}')`);
+            return await pool.query(`INSERT INTO line VALUES('${userID}','${displayName}')`);
         }
         await request1();
     }
@@ -169,21 +167,21 @@ function leaveLine(context) {
 }
 
 async function updateToken(){
-    const pool = new Pool(credentials);
+    const pool = mariadb.createPool(credentials);
     const requestData = async() => {
-        return await pool.query("SELECT * FROM data WHERE id = 1");
+        return await pool.query("SELECT * FROM zoom WHERE id = 1");
     }
     const result = await requestData();
     const now = new Date().getTime();
 
-    const time = result.rows[0].zoom_time_token;
+    const time = result.rows[0].time;
     let last = Number(time) + 3600000;
 
     if(last <= now){
         const client = process.env.ZOOM_CLIENT_ID;
         const secret = process.env.ZOOM_CLIENT_SECRET;
         const keyLocked = Buffer.from(client + ":" + secret).toString('base64');
-        const oldRefToken = Buffer.from((result.rows[0].zoom_refresh_token),'base64url').toString('utf-8')
+        const oldRefToken = Buffer.from((result.rows[0].refresh),'base64url').toString('utf-8')
 
         const request = async () => {
             const respon = await axios({
@@ -206,7 +204,7 @@ async function updateToken(){
         const now_token = String(new Date().getTime());
 
         const request1 = async() => {
-            return await pool.query(`UPDATE data SET zoom_token = ${acc_token}, zoom_refresh_token = ${ref_token}, zoom_time_token = ${now_token} WHERE id = 1`);
+            return await pool.query(`UPDATE zoom SET token = ${acc_token}, refresh = ${ref_token}, time = ${now_token} WHERE id = 1`);
         }
         await request1();
     }
