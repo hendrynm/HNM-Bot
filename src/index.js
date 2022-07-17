@@ -11,6 +11,7 @@ const pool = mariadb.createPool({
     database: process.env.MARIADB_DATABASE,
     user: process.env.MARIADB_USERNAME,
     password: process.env.MARIADB_PASSWORD,
+    connectionLimit: 5,
     ssl: false,
 });
 
@@ -28,6 +29,9 @@ async function getHeaderZoom() {
     }
     const ambilToken = await requestToken();
     const token = Buffer.from((ambilToken[0].token),'base64url').toString('utf-8');
+
+    await conn.release();
+    await conn.end();
 
     return {
         "Content-Type": "application/json; charset=UTF-8",
@@ -149,6 +153,8 @@ async function getLineName(context) {
         }
         await request1();
     }
+    await conn.release();
+    await conn.end();
     return data.displayName;
 }
 
@@ -206,6 +212,8 @@ async function updateToken(){
         const request1 = async() => {
             return await conn.query(`UPDATE zoom SET token = ${acc_token}, refresh = ${ref_token}, time = ${now_token} WHERE id = 1`);
         }
+        await conn.release();
+        await conn.end();
         await request1();
     }
 }
