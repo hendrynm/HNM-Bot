@@ -47,7 +47,7 @@ module.exports = function App(){
     ]);
 };
 
-function HandleMessage(context){
+async function HandleMessage(context){
     if(context.event.isText){
         const userMsg = context.event.text;
         const maintenance = process.env.MAINTENANCE_MODE;
@@ -57,41 +57,51 @@ function HandleMessage(context){
                 return context.replyText("Mohon maaf, saat ini kami sedang melakukan *maintenance*. Silakan coba kembali pada waktu lain.");
             }
             else{
-                if(userMsg === '/zoom'){
-                    return getMyMeetings(context);
+                if(await checkBlock(context)){
+                    if(userMsg === '/zoom'){
+                        return getMyMeetings(context);
+                    }
+                    else if(userMsg === '/live'){
+                        return zoomOnProgress(context);
+                    }
+                    else if(userMsg.substring(0,5) === '/book'){
+                        return scheduleZoom(context);
+                    }
+                    else if(userMsg.substring(0,6) === '/start'){
+                        return startZoom(context);
+                    }
+                    else if(userMsg.substring(0,5) === '/info'){
+                        return getZoomInvite(context);
+                    }
+                    else if(userMsg.substring(0,4) === '/rec'){
+                        return zoomRecord(context);
+                    }
+                    else if(userMsg.substring(0,8) === '/history'){
+                        return getPastMeeting(context);
+                    }
+                    else if(userMsg.substring(0,7) === '/delete'){
+                        return deleteZoom(context);
+                    }
+                    else if(userMsg.substring(0,5) === '/part'){
+                        return getParticipant(context);
+                    }
+                    else if(userMsg === '/help'){
+                        return getHelp(context);
+                    }
+                    else if(userMsg === '/leave'){
+                        return leaveLine(context);
+                    }
+                    else if(userMsg.substring(0,1) === "/"){
+                        return context.replyText("Kode tersebut belum tersedia.");
+                    }
                 }
-                else if(userMsg === '/live'){
-                    return zoomOnProgress(context);
-                }
-                else if(userMsg.substring(0,5) === '/book'){
-                    return scheduleZoom(context);
-                }
-                else if(userMsg.substring(0,6) === '/start'){
-                    return startZoom(context);
-                }
-                else if(userMsg.substring(0,5) === '/info'){
-                    return getZoomInvite(context);
-                }
-                else if(userMsg.substring(0,4) === '/rec'){
-                    return zoomRecord(context);
-                }
-                else if(userMsg.substring(0,8) === '/history'){
-                    return getPastMeeting(context);
-                }
-                else if(userMsg.substring(0,7) === '/delete'){
-                    return deleteZoom(context);
-                }
-                else if(userMsg.substring(0,5) === '/part'){
-                    return getParticipant(context);
-                }
-                else if(userMsg === '/help'){
-                    return getHelp(context);
-                }
-                else if(userMsg === '/leave'){
-                    return leaveLine(context);
-                }
-                else if(userMsg.substring(0,1) === "/"){
-                    return context.replyText("Kode tersebut belum tersedia.");
+                else{
+                    if(userMsg === '/help'){
+                        return getHelp(context);
+                    }
+                    else{
+                        return context.replyText("Maaf, kamu telah DIBLOKIR dari pengunaan bot ini karena PELANGGARAN. Kamu dapat meminta pembukaan blokir dengan menghubungi pembuat bot pada menu /help . Terima kasih atas pemahaman kamu.");
+                    }
                 }
             }
         }
@@ -129,6 +139,18 @@ async function getHelp(context) {
     let msg = opening + fitur + ending;
     await context.replySticker({packageId: "8522", stickerId: "16581282"});
     await context.replyText(msg);
+}
+
+async function checkBlock(context) {
+    const userID = context._event._rawEvent.source.userId;
+
+    const conn = await pool.getConnection();
+    const requestData = async() => {
+        return await conn.query(`SELECT COUNT(id_user) FROM line WHERE id_user = '${userID}' AND status = 1`);
+    }
+    const result = await requestData();
+
+    return (result[0].count === '0');
 }
 
 async function getLineName(context) {
