@@ -146,11 +146,13 @@ async function checkBlock(context) {
 
     const conn = await pool.getConnection();
     const requestData = async() => {
-        return await conn.query(`SELECT COUNT(id_user) FROM line WHERE id_user = '${userID}' AND status = 1`);
+        return await conn.query(`SELECT (CAST((COUNT(id_user)) as CHAR(1))) as hitung FROM line WHERE id_user = '${userID}' AND status = '1'`);
     }
     const result = await requestData();
+    await conn.release();
+    await conn.end();
 
-    return (result[0].count === '0');
+    return (result[0].hitung === '0');
 }
 
 async function getLineName(context) {
