@@ -167,13 +167,13 @@ async function getLineName(context) {
 
     const conn = await pool.getConnection();
     const requestData = async() => {
-        return await conn.query(`SELECT COUNT(id_user) FROM line WHERE id_user = '${userID}'`);
+        return await conn.query(`SELECT (CAST((COUNT(id_user)) as CHAR(1))) as hitung FROM line WHERE id_user = '${userID}'`);
     }
     const result = await requestData();
-    console.log(result);
-    if (result[0].count === '0'){
+
+    if (result[0].hitung === '0'){
         const request1 = async() => {
-            return await conn.query(`INSERT INTO line VALUES('${userID}','${displayName}')`);
+            return await conn.query(`INSERT INTO line VALUES('${userID}','${displayName}','0')`);
         }
         await request1();
     }
