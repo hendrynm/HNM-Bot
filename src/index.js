@@ -100,7 +100,7 @@ async function HandleMessage(context){
                         return getHelp(context);
                     }
                     else{
-                        return context.replyText("Maaf, kamu telah DIBLOKIR dari pengunaan bot ini karena PELANGGARAN. Kamu dapat meminta pembukaan blokir dengan menghubungi pembuat bot pada menu /help . Terima kasih atas pemahaman kamu.");
+                        return context.replyText("Maaf, kamu telah DIBLOKIR dari pengunaan bot ini karena PENGGUNAAN ILEGAL (tidak memiliki izin). \n\n Untuk bantuan pembukaan blokir, hubungi kami melalui: \nLine: https://line.me/ti/p/~hendry.naufal \nWhatsApp: https://wa.me/6285331303015");
                     }
                 }
             }
@@ -157,6 +157,7 @@ async function checkBlock(context) {
 
 async function getLineName(context) {
     const userID = context._event._rawEvent.source.userId;
+    console.log(userID);
 
     const request = async () => {
         const respon = await axios.get("https://api.line.me/v2/bot/profile/" + userID, {headers: headerLine});
@@ -562,7 +563,6 @@ async function zoomOnProgress(context){
     }
     const hasil = await request();
     const meetings = hasil.meetings;
-    console.log(meetings);
     let message = "Daftar Zoom Meeting yang sedang digunakan sekarang:\n";
 
     if(meetings[0] == null){
