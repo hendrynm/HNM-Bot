@@ -54,7 +54,7 @@ async function HandleMessage(context){
 
         if(userMsg.substring(0,1) === '/'){
             if(maintenance === 'ON'){
-                return context.replyText("Mohon maaf, saat ini kami sedang melakukan *maintenance*. Silakan coba kembali pada waktu lain.");
+                return context.replyText("Mohon maaf, saat ini kami sedang melakukan perpanjangan lisensi Zoom. Layanan kami akan kembali dalam beberapa hari mendatang. Terima kasih atas pengertiannya.");
             }
             else{
                 if(await checkBlock(context)){
