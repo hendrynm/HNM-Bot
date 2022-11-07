@@ -256,21 +256,27 @@ async function scheduleZoom(context){
 
     if(passcode === undefined){
         msg = "Format keyword salah ⛔, kirim /help untuk melihat format keyword yang benar 😉";
+        await context.replySticker({packageId: "8522", stickerId: "16581287"});
     }
     else if(date.substring(4,5) !== "-" || date.substring(7,8) !== "-"){
         msg = "Format tanggal salah ⛔, pastikan menggunakan strip ( - )";
+        await context.replySticker({packageId: "8522", stickerId: "16581287"});
     }
     else if(time.substring(2,3) !== ":"){
         msg = "Format jam salah ⛔, pastikan menggunakan titik dua ( : )";
+        await context.replySticker({packageId: "8522", stickerId: "16581287"});
     }
     else if(/[a-zA-Z]/g.test(duration)){
         msg = "Durasi meeting tidak boleh mengandung huruf ⛔";
+        await context.replySticker({packageId: "8522", stickerId: "16581287"});
     }
     else if(duration > 360){
         msg = "Durasi meeting terlalu lama ⛔, tolong konfirmasi ke pembuat bot untuk schedule manual 😉";
+        await context.replySticker({packageId: "8522", stickerId: "16581287"});
     }
     else if(passcode.length > 10){
         msg = "Passcode terlalu panjang ⛔, maksimal 10 digit";
+        await context.replySticker({packageId: "8522", stickerId: "16581287"});
     }
     else{
         await updateToken();
@@ -314,11 +320,12 @@ async function scheduleZoom(context){
             "*Topik: " + newTopic + "*\n" +
             "Tanggal: " + newDate + "\n" +
             "Waktu: " + newStart + " - " + newEnd + " (" + duration + " menit)\n\n" +
-            "Join Zoom Meeting\n" + newURL.replace("telkomsel.","") + "\n\n" +
+            "Join Zoom Meeting\n" + newURL.replace("its-ac-id.","") + "\n\n" +
             "Meeting ID: " + meetID.substring(0,3) + " " + meetID.substring(3,7) + " " + meetID.substring(7) + "\n" +
             "Passcode: " + passcode + "\n";
+
+        await context.replySticker({packageId: "8522", stickerId: "16581266"});
     }
-    await context.replySticker({packageId: "8522", stickerId: "16581266"});
     await context.replyText(msg);
 }
 
@@ -470,7 +477,7 @@ async function startZoom(context){
 
         if(data[0] === 200){
             let startUrl = data[1].start_url;
-            let newUrl = startUrl.replace("telkomsel.","");
+            let newUrl = startUrl.replace("its-ac-id.","");
             msg =
                 {
                     "type": "bubble",
@@ -539,6 +546,7 @@ async function startZoom(context){
         await context.replyFlex("Start Zoom Meeting", msg);
     }
     else{
+        await context.replySticker({packageId: "8522", stickerId: "16581287"});
         await context.replyText("Saat ini sedang ada dua Zoom Meeting yang berjalan bersamaan. Silakan akhiri salah satu Zoom Meeting berikut untuk melanjutkan.");
         await zoomOnProgress(context);
     }
@@ -592,13 +600,13 @@ async function getZoomInvite(context){
     await updateToken();
     const id = context.event.text.substring(6);
 
-    const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
-        return [respon.status,respon.data];
-    }
-    const hasil = await request();
+    try {
+        const request = async () => {
+            const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
+            return [respon.status,respon.data];
+        }
+        const hasil = await request();
 
-    if(hasil[0] === 200){
         const data = hasil[1];
 
         let topic = data.topic;
@@ -616,32 +624,38 @@ async function getZoomInvite(context){
             "*Topik: " + topic + "*\n" +
             "Tanggal: " + date + "\n" +
             "Waktu: " + start + " - " + end + " (" + dur + " menit)\n\n" +
-            "Join Zoom Meeting\n" + url.replace("telkomsel.","") + "\n\n" +
+            "Join Zoom Meeting\n" + url.replace("its-ac-id.","") + "\n\n" +
             "Meeting ID: " + zoomID.substring(0,3) + " " + zoomID.substring(3,7) + " " + zoomID.substring(7) + "\n" +
             "Passcode: " + pass + "\n";
 
+        await context.replySticker({packageId: "8522", stickerId: "16581269"});
         await context.replyText(message);
     }
-    else{
-        await context.replyText("Zoom Meeting tidak ditemukan");
+    catch (e) {
+        await context.replySticker({packageId: "8522", stickerId: "16581274"});
+        await context.replyText("Zoom Meeting dengan ID " + id + " tidak ditemukan");
     }
-
 }
 
 async function deleteZoom(context){
     await updateToken();
     const id = context.event.text.substring(8);
 
-    const request = async () => {
-        const respon = await axios.delete("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
-        return respon.status;
-    }
-    const status = await request();
+    try {
+        const request = async () => {
+            const respon = await axios.delete("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
+            return respon.status;
+        }
+        const status = await request();
 
-    let msg;
-    (status === 204) ? msg = "Zoom Meeting dengan ID " + id + " berhasil dibatalkan."
-        : msg = "Zoom Meeting dengan ID " + id + " tidak ditemukan.";
-    await context.replyText(msg);
+        let msg;
+        msg = "Zoom Meeting dengan ID " + id + " berhasil dibatalkan.";
+        await context.replyText(msg);
+    }
+    catch (e) {
+        msg = "Zoom Meeting dengan ID " + id + " tidak ditemukan.";
+        await context.replyText(msg);
+    }
 }
 
 async function zoomRecord(context){
@@ -649,19 +663,19 @@ async function zoomRecord(context){
     const id = context.event.text.substring(5);
     const uuid = encodeURIComponent(encodeURIComponent(id));
 
-    const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/meetings/" + uuid +"/recordings", { headers: await getHeaderZoom() });
-        return [respon.status,respon.data] ;
-    }
-    const hasil = await request();
-    const data = hasil[1];
+    try {
+        const request = async () => {
+            const respon = await axios.get("https://api.zoom.us/v2/meetings/" + uuid +"/recordings", { headers: await getHeaderZoom() });
+            return [respon.status,respon.data] ;
+        }
+        const hasil = await request();
+        const data = hasil[1];
 
-    if(hasil[0] === 200){
         let topik = data.topic;
         let start = new Date(data.start_time).toLocaleString('id-ID',{dateStyle: 'full', timeStyle: 'short'});
         let durasi = data.duration + " menit";
         let totalSize = (Math.ceil((data.total_size)/1024/1024)) + " MB";
-        let shareUrl = (data.share_url).replace("telkomsel.","");
+        let shareUrl = (data.share_url).replace("its-ac-id.","");
         let recData = data.recording_files;
         let sizeSSSV, urlSSSV, sizeSSGV, urlSSGV, sizeSV, urlSV, sizeGV, urlGV, sizeSS, urlSS, sizeCF, urlCF;
 
@@ -670,33 +684,33 @@ async function zoomRecord(context){
             switch(tipe){
                 case("shared_screen_with_speaker_view"):
                     sizeSSSV = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
-                    urlSSSV = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    urlSSSV = (recData[i].download_url).replace("its-ac-id.","") || undefined;
                     break;
                 case("shared_screen_with_gallery_view"):
                     sizeSSGV = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
-                    urlSSGV = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    urlSSGV = (recData[i].download_url).replace("its-ac-id.","") || undefined;
                     break;
                 case("speaker_view"):
                     sizeSV = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
-                    urlSV = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    urlSV = (recData[i].download_url).replace("its-ac-id.","") || undefined;
                     break;
                 case("gallery_view"):
                     sizeGV = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
-                    urlGV = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    urlGV = (recData[i].download_url).replace("its-ac-id.","") || undefined;
                     break;
                 case("shared_screen"):
                     sizeSS = (Math.ceil((recData[i].file_size)/1024/1024)) + " MB" || undefined;
-                    urlSS = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    urlSS = (recData[i].download_url).replace("its-ac-id.","") || undefined;
                     break;
                 case("chat_file"):
                     sizeCF = (Math.ceil((recData[i].file_size)/1024)) + " KB" || undefined;
-                    urlCF = (recData[i].download_url).replace("telkomsel.","") || undefined;
+                    urlCF = (recData[i].download_url).replace("its-ac-id.","") || undefined;
                     break;
             }
         }
 
         let msg =
-            "*Topik: " + topik + "*\n" +
+            "*Topik: " + topik + "*\n\n" +
             "Waktu Start Meeting: " + start + "\n" +
             "Durasi Meeting: " + durasi + "\n" +
             "Size Recording: " + totalSize + "\n" +
@@ -704,7 +718,7 @@ async function zoomRecord(context){
         ;
 
         let msg2 =
-            "*Daftar Link Download per Jenis Recording: \n\n*" +
+            "*Daftar Link Download per Jenis Recording:* \n\n" +
             "*1. Share Screen With Speaker View*\n" +
             ((sizeSSSV === undefined) ? "Tidak tersedia\n\n" : urlSSSV + " (" + sizeSSSV + ")\n\n") +
             "*2. Share Screen With Gallery View*\n" +
@@ -722,8 +736,9 @@ async function zoomRecord(context){
         await context.replyText(msg);
         await context.replyText(msg2);
     }
-    else{
-        await context.replyText("Hasil Recording tidak ditemukan");
+    catch (e) {
+        await context.replySticker({packageId: "8522", stickerId: "16581283"});
+        await context.replyText("Hasil Recording untuk Meeting ID " + id + " tidak ditemukan");
     }
 }
 
@@ -739,14 +754,14 @@ async function getPastMeeting(context){
     await updateToken();
     const id = context.event.text.substring(9);
 
-    const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/past_meetings/" + id + "/instances", { headers: await getHeaderZoom() });
-        return [respon.status,respon.data] ;
-    }
-    const hasil = await request();
-    let msg = "*Riwayat penggunaan Zoom Meeting*\n\n";
+    try {
+        const request = async () => {
+            const respon = await axios.get("https://api.zoom.us/v2/past_meetings/" + id + "/instances", { headers: await getHeaderZoom() });
+            return [respon.status,respon.data] ;
+        }
+        const hasil = await request();
+        let msg = "*Riwayat penggunaan Zoom Meeting*\n\n";
 
-    if(hasil[0] === 200){
         const data1 = hasil[1].meetings;
         const sorted = data1.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
 
@@ -757,11 +772,13 @@ async function getPastMeeting(context){
             msg = msg + "Unique ID: " + sorted[i].uuid + "\nWaktu Mulai: " +
                 new Date(sorted[i].start_time).toLocaleString('id-ID', {dateStyle: 'full', timeStyle: 'short'}) + "\n\n";
         }
+
+        await context.replyText(msg);
     }
-    else{
-        msg = "Kode Zoom Meeting tidak ditemukan";
+    catch (e) {
+        await context.replySticker({packageId: "8522", stickerId: "16581283"});
+        await context.replyText("Riwayat Zoom Meeting dengan ID " + id + " tidak ditemukan");
     }
-    await context.replyText(msg);
 }
 
 async function getParticipant(context){
@@ -769,15 +786,23 @@ async function getParticipant(context){
     const id = context.event.text.substring(6);
     const uuid = encodeURIComponent(encodeURIComponent(id));
 
-    const request = async () => {
-        const respon = await axios.get("https://api.zoom.us/v2/past_meetings/" + uuid + "/participants?page_size=300", { headers: await getHeaderZoom() });
-        return [respon.status,respon.data] ;
-    }
-    const hasil = await request();
-    let msg;
-    let konten = [];
+    try {
+        const request = async () => {
+            const respon = await axios.get("https://api.zoom.us/v2/past_meetings/" + uuid + "/participants?page_size=300", { headers: await getHeaderZoom() });
+            return [respon.status,respon.data] ;
+        }
+        const hasil = await request();
 
-    if(hasil[0] === 200){
+        const request3 = async () => {
+            const respon = await axios.get("https://api.zoom.us/v2/meetings/" + id, { headers: await getHeaderZoom() });
+            return [respon.status,respon.data];
+        }
+        const hasil3 = await request3();
+
+        let msg;
+        let konten = [];
+        let pesan = [];
+
         const page = hasil[1].page_count;
         let next_token = hasil[1].next_page_token || undefined;
         let data = hasil[1].participants;
@@ -799,13 +824,20 @@ async function getParticipant(context){
                 data = hasil2.participants;
             }
         }
-        msg = "*Daftar Kehadiran di Zoom Meeting*\n*Total Kehadiran: " + konten.length + " orang.*\n\n";
+        msg = "*Topik Zoom Meeting: " + hasil3[1].topic + " *\n" +
+            "*Total Kehadiran: " + konten.length + " orang.*\n\n";
 
-        for(let i=0 ; i < konten.length ; i++){
+        for(let i=0, panjang = konten.length-1 ; i <= panjang ; i++){
             msg = msg + (i+1) + ". " + konten[i] + "\n";
+
+            if(i !== 0 && (i%149 === 0 || i === panjang)){
+                await context.replyText(msg);
+                msg = null;
+            }
         }
-    } else{
-        msg = "Zoom Meeting tidak ditemukan";
     }
-    await context.replyText(msg);
+    catch (e) {
+        await context.replySticker({packageId: "8522", stickerId: "16581283"});
+        await context.replyText("Partisipan Zoom Meeting dengan ID " + id + " tidak ditemukan");
+    }
 }

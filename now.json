@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@now/node",
+      "config": {
+        "includeFiles": [
+          "bottender.config.js",
+          "index.js"
+        ],
+        "bundle": true
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/.*",
+      "dest": "/server.js"
+    }
+  ],
+  "env": {
+    "MESSENGER_PAGE_ID": "xxxxxx",
+    "MESSENGER_ACCESS_TOKEN": "xxxxxx",
+    "MESSENGER_APP_ID": "xxxxxx",
+    "MESSENGER_APP_SECRET": "xxxxxx",
+    "MESSENGER_VERIFY_TOKEN": "xxxxxx"
+  }
+}
