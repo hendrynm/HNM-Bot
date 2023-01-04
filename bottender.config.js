@@ -1,4 +1,4 @@
-module.exports = {
+ module.exports = {
   session: {
     driver: 'memory',
     stores: {

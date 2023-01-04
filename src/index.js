@@ -544,6 +544,7 @@ async function startZoom(context){
         }
         await context.replySticker({packageId: "8522", stickerId: "16581289"});
         await context.replyFlex("Start Zoom Meeting", msg);
+        await donate(context);
     }
     else{
         await context.replySticker({packageId: "8522", stickerId: "16581287"});
@@ -840,4 +841,10 @@ async function getParticipant(context){
         await context.replySticker({packageId: "8522", stickerId: "16581283"});
         await context.replyText("Partisipan Zoom Meeting dengan ID " + id + " tidak ditemukan");
     }
+}
+
+async function donate(context){
+    let msg = "Saat ini layanan kami (tekan.id) telah hampir berusia 1 tahun. Layanan kami tidak mungkin bisa terus berlanjut tanpa dukunganmu. Kamu bisa memberikan donasi untuk biaya perpanjangan domain kami melalui https://trakteer.id/hendrynm/tip . Terima kasih atas bantuanmu 👍"
+
+    await context.replyText(msg);
 }
